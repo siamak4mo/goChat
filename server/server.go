@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -93,24 +94,29 @@ func handle_clients(pac chan Packet){
 			break
 
 			case P_login_req:
-			_exists := false
-			for _,c := range clients{
-				if c.User.Username == p.Payload{
-					_exists = true
-					break
-				}
-			}
-			if !_exists{
-				tk := Init_token()
-				tk.Username = []byte(p.Payload)
-				tk.MkToken()
-				
-				p.Conn.Write([]byte(tk.Token))
+			if !username_isvalid(p.Payload){
+				p.Conn.Write([]byte("Invalid username"))
 				p.Conn.Close()
-				log.Printf("%s just registered", p.Payload)
 			}else{
-				p.Conn.Write([]byte("User Already exists"))
-				p.Conn.Close()
+				_exists := false
+				for _,c := range clients{
+					if c.User.Username == p.Payload{
+						_exists = true
+						break
+					}
+				}
+				if !_exists{
+					tk := Init_token()
+					tk.Username = []byte(p.Payload)
+					tk.MkToken()
+
+					p.Conn.Write([]byte(tk.Token))
+					p.Conn.Close()
+					log.Printf("%s just registered", p.Payload)
+				}else{
+					p.Conn.Write([]byte("User Already exists"))
+					p.Conn.Close()
+				}
 			}
 			break
 		}
@@ -188,4 +194,18 @@ func listen_client(conn net.Conn, p chan Packet, u User_t){
 			User: u,
 		}
 	}
+}
+
+
+func username_isvalid(name string) bool{
+	if len(name) > 32 || len(name) == 0 {
+		return false
+	}
+	for i := 0; i < len(name); i++ {
+		if name[i] > unicode.MaxASCII ||
+			name[i]=='\n' || name[i]=='\r' {
+			return false
+		}
+	}
+	return true
 }
