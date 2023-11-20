@@ -10,6 +10,7 @@ const (
 	LADDR = "127.0.0.1"
 	LPORT = ":8080"
 	LISTEN = LADDR+LPORT
+	LOGIN_KEYW = "LOGIN "
 )
 
 type Packet_t uint8
@@ -131,10 +132,11 @@ func reg_client(conn net.Conn, p chan Packet) {
 		}
 		token := string(buffer[0:n-1])
 		
-		if n>7 && strings.Compare(token[0:6], "LOGIN ") == 0{
+		if n>len(LOGIN_KEYW)+1 &&
+			strings.Compare(token[0:len(LOGIN_KEYW)], LOGIN_KEYW) == 0{
 			p <- Packet{
 				Type: P_login_req,
-				Payload: token[6:n-1],
+				Payload: token[len(LOGIN_KEYW):n-1],
 				Conn: conn,
 			}
 		}else{
