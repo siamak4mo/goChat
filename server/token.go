@@ -29,6 +29,13 @@ func Init_token() *Token_t{  // TODO: config
 	t.hasher = sha256.New()
 	return &t;
 }
+func Init_stoken(token string) *Token_t{  // TODO: config
+	t := Token_t{}
+	t.Token = token
+	t.hasher = sha256.New()
+	return &t;
+}
+
 func Init_btoken(bearer_token string) (*Token_t, error){  // TODO: config
 	if len(bearer_token) < len(BEARER)+1 ||
 		strings.Compare(BEARER, bearer_token[0:len(BEARER)]) != 0{
