@@ -81,7 +81,8 @@ func handle_clients(pac chan Packet){
 			case P_new_message:
 			for _, c := range clients{
 				if c.Conn != p.Conn{
-					c.Conn.Write([]byte(c.User.Username))
+					c.Conn.Write([]byte(p.User.Username))
+					c.Conn.Write([]byte("\n"))
 					c.Conn.Write([]byte(p.Payload))
 				}
 			}
@@ -142,16 +143,17 @@ func reg_client(conn net.Conn, p chan Packet) {
 		}else{
 			tk := Init_stoken(token)
 			if tk.Validate(){
+				u := User_t{
+					Username: string(tk.Username),
+					Signature: tk.Signature,
+				}
 				p <- Packet{
 					Type: P_loged_in,
 					Payload: token,
-					User: User_t{
-						Username: string(tk.Username),
-						Signature: tk.Signature,
-					},
+					User: u,
 					Conn: conn,
 				}
-				listen_client(conn, p)
+				listen_client(conn, p, u)
 			}else{
 				conn.Close();
 				p <- Packet{
@@ -165,7 +167,7 @@ func reg_client(conn net.Conn, p chan Packet) {
 	}
 }
 
-func listen_client(conn net.Conn, p chan Packet){
+func listen_client(conn net.Conn, p chan Packet, u User_t){
 	buffer := make([]byte, 64)
 	for{
 		n, err := conn.Read(buffer)
@@ -174,6 +176,7 @@ func listen_client(conn net.Conn, p chan Packet){
 			p <- Packet{
 				Type: P_disconnected,
 				Conn: conn,
+				Payload: conn.RemoteAddr().String(),
 			}
 			return
 		}
@@ -182,6 +185,7 @@ func listen_client(conn net.Conn, p chan Packet){
 			Type: P_new_message,
 			Conn: conn,
 			Payload: text,
+			User: u,
 		}
 	}
 }
