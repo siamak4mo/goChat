@@ -96,7 +96,7 @@ func handle_clients(pac chan Packet) {
 
 		case P_login_req:
 			if !username_isvalid(p.Payload) {
-				p.Conn.Write([]byte("Invalid username"))
+				p.Conn.Write([]byte("Invalid username\n"))
 				p.Conn.Close()
 			} else {
 				_exists := false
@@ -113,9 +113,9 @@ func handle_clients(pac chan Packet) {
 
 					p.Conn.Write([]byte(tk.Token))
 					p.Conn.Close()
-					log.Printf("%s just registered", p.Payload)
+					log.Printf("%s just registered\n", p.Payload)
 				} else {
-					p.Conn.Write([]byte("User Already exists"))
+					p.Conn.Write([]byte("User Already exists\n"))
 					p.Conn.Close()
 				}
 			}
