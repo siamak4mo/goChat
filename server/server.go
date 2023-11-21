@@ -16,8 +16,8 @@ type Packet_t uint8
 
 const (
 	P_login Packet_t = iota + 1
+	P_signup
 	P_disconnected
-	P_sign_up
 	P_new_message
 )
 
@@ -97,7 +97,7 @@ func handle_clients(pac chan Packet) {
 			}
 			break
 
-		case P_sign_up:
+		case P_signup:
 			if !username_isvalid(p.Payload) {
 				p.Conn.Write([]byte("Invalid username\n"))
 				p.Conn.Close()
