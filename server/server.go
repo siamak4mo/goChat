@@ -17,7 +17,7 @@ const (
 type Packet_t uint8
 
 const (
-	P_loged_in Packet_t = iota + 1
+	P_login Packet_t = iota + 1
 	P_disconnected
 	P_failed_login
 	P_sign_up
@@ -72,10 +72,25 @@ func handle_clients(pac chan Packet) {
 			}
 			break
 
-		case P_loged_in:
-			clients[p.Payload] = &p
-			log.Printf("%s CONNECTED\n", p.User.Username)
-			p.Conn.Write([]byte("loged in\n"))
+		case P_login:
+			tk := Init_stoken(p.Payload)
+			if tk.Validate() {
+				u := User_t{
+					Username:  string(tk.Username),
+					Signature: tk.Signature,
+				}
+				clients[p.Conn.RemoteAddr().String()] = &p
+				log.Printf("%s CONNECTED\n", u.Username)
+				p.Conn.Write([]byte("Loged in\n"))
+				go listen_client(p.Conn, pac, u)
+			} else {
+				pac <- Packet{
+					Type:    P_failed_login,
+					Conn:    p.Conn,
+					Payload: p.Conn.RemoteAddr().String(),
+				}
+				return
+			}
 			break
 
 		case P_new_message:
@@ -147,38 +162,22 @@ func reg_client(conn net.Conn, p chan Packet) {
 				Conn:    conn,
 			}
 		} else {
-			tk := Init_stoken(req)
-			if tk.Validate() {
-				u := User_t{
-					Username:  string(tk.Username),
-					Signature: tk.Signature,
-				}
-				p <- Packet{
-					Type:    P_loged_in,
-					Payload: req,
-					User:    u,
-					Conn:    conn,
-				}
-				listen_client(conn, p, u)
-			} else {
-				p <- Packet{
-					Type:    P_failed_login,
-					Conn:    conn,
-					Payload: conn.RemoteAddr().String(),
-				}
-				return
+			p <- Packet{
+				Type:    P_login,
+				Conn:    conn,
+				Payload: req,
 			}
+			return
 		}
 	}
 }
 
-func listen_client(conn net.Conn, p chan Packet, u User_t) {
+func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 	buffer := make([]byte, 64)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
-			conn.Close()
-			p <- Packet{
+			pac <- Packet{
 				Type:    P_disconnected,
 				Conn:    conn,
 				Payload: conn.RemoteAddr().String(),
@@ -186,7 +185,7 @@ func listen_client(conn net.Conn, p chan Packet, u User_t) {
 			return
 		}
 		text := string(buffer[0:n])
-		p <- Packet{
+		pac <- Packet{
 			Type:    P_new_message,
 			Conn:    conn,
 			Payload: text,
