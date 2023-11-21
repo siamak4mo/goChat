@@ -175,12 +175,18 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 			}
 			return
 		}
-		text := string(buffer[0:n])
-		pac <- Packet{
-			Type:    P_new_message,
-			Conn:    conn,
-			Payload: text,
-			User:    u,
+
+		if n > 3 {
+			switch buffer[0] {
+			case 'T': // text message
+				pac <- Packet{
+					Type:    P_new_message,
+					Conn:    conn,
+					Payload: string(buffer[2:n]),
+					User:    u,
+				}
+				break
+			}
 		}
 	}
 }
