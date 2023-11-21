@@ -32,6 +32,9 @@ type Packet struct {
 	Type    Packet_t
 }
 
+// map from client "IP:PORT" -> login packet
+var clients = map[string]*Packet{}
+
 func main() {
 	log.Println("INITIALIZING server")
 
@@ -57,7 +60,6 @@ func main() {
 }
 
 func handle_clients(pac chan Packet) {
-	clients := map[string]*Packet{}
 	for {
 		p := <-pac
 
