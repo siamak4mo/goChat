@@ -20,7 +20,7 @@ const (
 	P_loged_in Packet_t = iota + 1
 	P_disconnected
 	P_failed_login
-	P_login_req
+	P_sign_up
 	P_new_message
 )
 
@@ -94,7 +94,7 @@ func handle_clients(pac chan Packet) {
 			p.Conn.Close()
 			break
 
-		case P_login_req:
+		case P_sign_up:
 			if !username_isvalid(p.Payload) {
 				p.Conn.Write([]byte("Invalid username\n"))
 				p.Conn.Close()
@@ -142,7 +142,7 @@ func reg_client(conn net.Conn, p chan Packet) {
 		if n > len(LOGIN_KEYW)+1 &&
 			strings.Compare(req[0:len(LOGIN_KEYW)], LOGIN_KEYW) == 0 {
 			p <- Packet{
-				Type:    P_login_req,
+				Type:    P_sign_up,
 				Payload: req[len(LOGIN_KEYW) : n-1],
 				Conn:    conn,
 			}
