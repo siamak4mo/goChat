@@ -153,7 +153,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 
 			case 'S': // signup
 				p <- Packet{
-					Type:    P_login,
+					Type:    P_signup,
 					Conn:    conn,
 					Payload: string(buffer[2 : n-1]),
 				}
