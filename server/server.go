@@ -3,15 +3,13 @@ package main
 import (
 	"log"
 	"net"
-	"strings"
 	"unicode"
 )
 
 const (
-	LADDR      = "127.0.0.1"
-	LPORT      = ":8080"
-	LISTEN     = LADDR + LPORT
-	LOGIN_KEYW = "LOGIN "
+	LADDR  = "127.0.0.1"
+	LPORT  = ":8080"
+	LISTEN = LADDR + LPORT
 )
 
 type Packet_t uint8
@@ -54,7 +52,7 @@ func main() {
 			continue
 		}
 
-		go reg_client(conn, p)
+		go client_registry(conn, p)
 	}
 }
 
@@ -129,7 +127,7 @@ func handle_clients(pac chan Packet) {
 	}
 }
 
-func reg_client(conn net.Conn, p chan Packet) {
+func client_registry(conn net.Conn, p chan Packet) {
 	buffer := make([]byte, 256)
 	for {
 		n, err := conn.Read(buffer)
@@ -142,22 +140,25 @@ func reg_client(conn net.Conn, p chan Packet) {
 			conn.Close()
 			return
 		}
-		req := string(buffer[0 : n-1])
 
-		if n > len(LOGIN_KEYW)+1 &&
-			strings.Compare(req[0:len(LOGIN_KEYW)], LOGIN_KEYW) == 0 {
-			p <- Packet{
-				Type:    P_sign_up,
-				Payload: req[len(LOGIN_KEYW) : n-1],
-				Conn:    conn,
+		if n > 3 {
+			switch buffer[0] {
+			case 'L': // login
+				p <- Packet{
+					Type:    P_login,
+					Conn:    conn,
+					Payload: string(buffer[2 : n-1]),
+				}
+				return
+
+			case 'S': // signup
+				p <- Packet{
+					Type:    P_login,
+					Conn:    conn,
+					Payload: string(buffer[2 : n-1]),
+				}
+				return
 			}
-		} else {
-			p <- Packet{
-				Type:    P_login,
-				Conn:    conn,
-				Payload: req,
-			}
-			return
 		}
 	}
 }
