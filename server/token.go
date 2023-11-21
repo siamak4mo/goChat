@@ -19,8 +19,8 @@ const (
 type Token_t struct{
 	Token string
 	Signature string
-	Username []byte
 	hasher hash.Hash
+	Username []byte
 }
 
 
