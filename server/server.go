@@ -90,6 +90,8 @@ func handle_clients(pac chan Packet) {
 
 		case P_failed_login:
 			log.Printf("%s LOGIN FAILED\n", p.Payload)
+			p.Conn.Write([]byte("Login Failed\n"))
+			p.Conn.Close()
 			break
 
 		case P_login_req:
@@ -159,7 +161,6 @@ func reg_client(conn net.Conn, p chan Packet) {
 				}
 				listen_client(conn, p, u)
 			} else {
-				conn.Close()
 				p <- Packet{
 					Type:    P_failed_login,
 					Conn:    conn,
