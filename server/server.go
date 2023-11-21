@@ -19,7 +19,7 @@ type Packet_t uint8
 const (
 	P_login Packet_t = iota + 1
 	P_disconnected
-	P_failed_login
+	P_login_failed
 	P_sign_up
 	P_new_message
 )
@@ -85,7 +85,7 @@ func handle_clients(pac chan Packet) {
 				go listen_client(p.Conn, pac, u)
 			} else {
 				pac <- Packet{
-					Type:    P_failed_login,
+					Type:    P_login_failed,
 					Conn:    p.Conn,
 					Payload: p.Conn.RemoteAddr().String(),
 				}
@@ -103,7 +103,7 @@ func handle_clients(pac chan Packet) {
 			}
 			break
 
-		case P_failed_login:
+		case P_login_failed:
 			log.Printf("%s LOGIN FAILED\n", p.Payload)
 			p.Conn.Write([]byte("Login Failed\n"))
 			p.Conn.Close()
