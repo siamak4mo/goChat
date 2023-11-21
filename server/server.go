@@ -137,17 +137,17 @@ func reg_client(conn net.Conn, p chan Packet) {
 			conn.Close()
 			return
 		}
-		token := string(buffer[0 : n-1])
+		req := string(buffer[0 : n-1])
 
 		if n > len(LOGIN_KEYW)+1 &&
-			strings.Compare(token[0:len(LOGIN_KEYW)], LOGIN_KEYW) == 0 {
+			strings.Compare(req[0:len(LOGIN_KEYW)], LOGIN_KEYW) == 0 {
 			p <- Packet{
 				Type:    P_login_req,
-				Payload: token[len(LOGIN_KEYW) : n-1],
+				Payload: req[len(LOGIN_KEYW) : n-1],
 				Conn:    conn,
 			}
 		} else {
-			tk := Init_stoken(token)
+			tk := Init_stoken(req)
 			if tk.Validate() {
 				u := User_t{
 					Username:  string(tk.Username),
@@ -155,7 +155,7 @@ func reg_client(conn net.Conn, p chan Packet) {
 				}
 				p <- Packet{
 					Type:    P_loged_in,
-					Payload: token,
+					Payload: req,
 					User:    u,
 					Conn:    conn,
 				}
