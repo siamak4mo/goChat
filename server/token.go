@@ -13,49 +13,48 @@ import (
 const (
 	SECVAL = "MyseCretvAlue"
 	BEARER = "Bearer"
-	T_SEP = "."
+	T_SEP  = "."
 )
 
-type Token_t struct{
-	Token string
+type Token_t struct {
+	Token     string
 	Signature string
-	hasher hash.Hash
-	Username []byte
+	hasher    hash.Hash
+	Username  []byte
 }
 
-
-func Init_token() *Token_t{  // TODO: config
+func Init_token() *Token_t { // TODO: config
 	t := Token_t{}
 	t.hasher = sha256.New()
-	return &t;
+	return &t
 }
-func Init_stoken(token string) *Token_t{  // TODO: config
+func Init_stoken(token string) *Token_t { // TODO: config
 	t := Token_t{}
 	t.Token = token
 	t.hasher = sha256.New()
-	return &t;
+	return &t
 }
 
-func Init_btoken(bearer_token string) (*Token_t, error){  // TODO: config
+func Init_btoken(bearer_token string) (*Token_t, error) { // TODO: config
 	if len(bearer_token) < len(BEARER)+1 ||
-		strings.Compare(BEARER, bearer_token[0:len(BEARER)]) != 0{
-			return nil, errors.New("Invalid Bearer Token")
-		}
+		strings.Compare(BEARER, bearer_token[0:len(BEARER)]) != 0 {
+		return nil, errors.New("Invalid Bearer Token")
+	}
 
 	t := Token_t{}
 	t.Token = bearer_token[len(BEARER)+1:]
 	t.hasher = sha256.New()
-	return &t, nil;
+	return &t, nil
 }
 
-func (t *Token_t) parse() error{
+func (t *Token_t) parse() error {
 	token_parts := strings.Split(t.Token, T_SEP)
-	if len(token_parts) != 2{
+	if len(token_parts) != 2 {
 		return errors.New("invalid token")
 	}
 
 	uname, err1 := base64.StdEncoding.DecodeString(token_parts[0])
-	if err1 != nil{
+	if err1 != nil {
 		return errors.New("invalid token - " + err1.Error())
 	}
 
@@ -64,10 +63,9 @@ func (t *Token_t) parse() error{
 	return nil
 }
 
-
-func (t *Token_t) MkToken(){
+func (t *Token_t) MkToken() {
 	username_b64 := base64.StdEncoding.EncodeToString(t.Username)
-	
+
 	t.hasher.Write(t.Username)
 	t.hasher.Write([]byte(SECVAL))
 	signature := hex.EncodeToString(t.hasher.Sum(nil))
@@ -76,10 +74,9 @@ func (t *Token_t) MkToken(){
 	t.Token = fmt.Sprintf("%s%s%s", username_b64, T_SEP, signature)
 }
 
-
-func (t *Token_t) Validate() bool{
+func (t *Token_t) Validate() bool {
 	e := t.parse()
-	if e!=nil{
+	if e != nil {
 		return false
 	}
 
@@ -87,7 +84,7 @@ func (t *Token_t) Validate() bool{
 	t.hasher.Write([]byte(SECVAL))
 	exp_sign := hex.EncodeToString(t.hasher.Sum(nil))
 
-	if strings.Compare(t.Signature, exp_sign) != 0{
+	if strings.Compare(t.Signature, exp_sign) != 0 {
 		return false
 	}
 	return true
