@@ -27,6 +27,7 @@ const (
 	P_logout
 	P_disconnected
 	P_new_text_message
+	P_whoami
 )
 
 type User_t struct {
@@ -42,6 +43,10 @@ type Packet struct {
 
 // map from client "IP:PORT" -> login packet
 var clients = map[string]*Packet{}
+
+func (u *User_t) String() string {
+	return "Username: " + u.Username + "\nSignature: " + u.Signature + "\n"
+}
 
 func main() {
 	log.Println("INITIALIZING server")
@@ -144,6 +149,11 @@ func handle_clients(pac chan Packet) {
 
 			go client_registry(p.Conn, pac)
 			break
+
+		case P_whoami:
+			p.Conn.Write([]byte(p.User.String()))
+			p.Conn.Write([]byte("Addr: " + p.Conn.RemoteAddr().String() + "\n"))
+			break
 		}
 	}
 }
@@ -223,6 +233,13 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 				}
 				return
 
+			case 'W':
+				// send whoami
+				pac <- Packet{
+					Type_t: P_whoami,
+					Conn:   conn,
+					User:   u,
+				}
 			}
 		}
 	}
