@@ -110,7 +110,7 @@ func handle_clients(pac chan Packet) {
 
 		case P_new_text_message:
 			for _, c := range clients {
-				if c.Conn != p.Conn {
+				if strings.Compare(c.User.Username, p.User.Username) != 0 {
 					c.Conn.Write([]byte(p.User.Username))
 					c.Conn.Write([]byte("\n"))
 					c.Conn.Write([]byte(p.Payload))
