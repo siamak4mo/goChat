@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"server/server/config"
+	"server/server/stoken"
 	"strings"
 	"unicode"
 )
@@ -99,7 +100,7 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_login:
-			tk := Init_stoken(p.Payload) // exp payload: token  b64(username).signature
+			tk := stoken.New_s(p.Payload) // exp payload: token  b64(username).signature
 			if tk.Validate() {
 				u := User_t{
 					Username:  string(tk.Username),
@@ -138,7 +139,7 @@ func (s *Server) handle_clients() {
 				p.Conn.Close()
 			} else {
 				if !s.username_exist(p.Payload) {
-					tk := Init_token()
+					tk := stoken.New()
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
 
