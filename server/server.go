@@ -106,7 +106,7 @@ func main() {
 // main logic
 func (s *Server) handle_clients() {
 	for {
-		p := <- s.Pac
+		p := <-s.Pac
 
 		switch p.Type_t {
 		case P_disconnected:
@@ -134,7 +134,7 @@ func (s *Server) handle_clients() {
 					log.Printf("%s CONNECTED\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
 
-					go listen_client(p.Conn, s.Pac, u) // handle messages
+					go s.listen_client(p.Conn, u) // handle messages
 				} else {
 					p.Conn.Write([]byte("Already Loged in\n"))
 				}
@@ -189,7 +189,7 @@ func (s *Server) handle_clients() {
 	}
 }
 
-func (s* Server) client_registry(conn net.Conn) {
+func (s *Server) client_registry(conn net.Conn) {
 	buffer := make([]byte, M_BUFF_S)
 	for {
 		n, err := conn.Read(buffer)
@@ -225,13 +225,13 @@ func (s* Server) client_registry(conn net.Conn) {
 	}
 }
 
-func listen_client(conn net.Conn, pac chan Packet, u User_t) {
+func (s *Server) listen_client(conn net.Conn, u User_t) {
 	buffer := make([]byte, B_BUFF_S)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
 			// user has disconnected
-			pac <- Packet{
+			s.Pac <- Packet{
 				Type_t:  P_disconnected,
 				Conn:    conn,
 				Payload: conn.RemoteAddr().String(),
@@ -244,7 +244,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 			switch buffer[0] {
 			case 'T':
 				// got text message
-				pac <- Packet{
+				s.Pac <- Packet{
 					Type_t:  P_new_text_message,
 					Conn:    conn,
 					Payload: string(buffer[PAYLOAD_PADD-1 : n]),
@@ -256,7 +256,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 			switch buffer[0] {
 			case 'L':
 				// to logout
-				pac <- Packet{
+				s.Pac <- Packet{
 					Type_t:  P_logout,
 					Conn:    conn,
 					Payload: conn.RemoteAddr().String(),
@@ -266,7 +266,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 
 			case 'W':
 				// send whoami
-				pac <- Packet{
+				s.Pac <- Packet{
 					Type_t: P_whoami,
 					Conn:   conn,
 					User:   u,
