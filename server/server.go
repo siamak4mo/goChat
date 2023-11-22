@@ -128,12 +128,10 @@ func handle_clients(pac chan Packet) {
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
 
-					p.Conn.Write([]byte(tk.Token))
-					p.Conn.Close()
+					p.Conn.Write([]byte("Token: " + tk.Token + "\n"))
 					log.Printf("%s just registered\n", p.Payload)
 				} else {
 					p.Conn.Write([]byte("User Already exists\n"))
-					p.Conn.Close()
 				}
 			}
 			break
@@ -171,7 +169,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 					Conn:    conn,
 					Payload: string(buffer[2 : n-1]),
 				}
-				return
+				break
 			}
 		}
 	}
