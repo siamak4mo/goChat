@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"strings"
 	"unicode"
 )
 
@@ -82,6 +83,7 @@ func handle_clients(pac chan Packet) {
 					Username:  string(tk.Username),
 					Signature: tk.Signature,
 				}
+				p.User = u
 				clients[p.Conn.RemoteAddr().String()] = &p
 				log.Printf("%s CONNECTED\n", u.Username)
 				p.Conn.Write([]byte("Loged in\n"))
@@ -108,14 +110,7 @@ func handle_clients(pac chan Packet) {
 				p.Conn.Write([]byte("Invalid username\n"))
 				p.Conn.Close()
 			} else {
-				_exists := false
-				for _, c := range clients {
-					if c.User.Username == p.Payload {
-						_exists = true
-						break
-					}
-				}
-				if !_exists {
+				if !username_exist(p.Payload) {
 					tk := Init_token()
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
@@ -209,4 +204,18 @@ func username_isvalid(name string) bool {
 		}
 	}
 	return true
+}
+
+func username_exist(uname string) bool {
+	if len(uname) == 0 {
+		return true // to prevent null user addition
+	}
+	for _, login_pac := range clients {
+		log.Printf("%s ?= %s", login_pac.User.Username, uname)
+		if strings.Compare(login_pac.User.Username, uname) == 0 {
+			return true
+		}
+	}
+
+	return false
 }
