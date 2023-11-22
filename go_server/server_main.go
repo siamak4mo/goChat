@@ -14,9 +14,4 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not listen -- addr: %s\n", s.Conf.Laddr)
 	}
-
-	defer func(){
-		log.Println("TERMINATING the server")
-		s.Close()
-	}()
 }
