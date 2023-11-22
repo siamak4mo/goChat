@@ -58,9 +58,9 @@ func main() {
 	}
 	log.Printf("Listening on %s\n", LISTEN)
 
-	p := make(chan Packet)
+	pac := make(chan Packet)
 
-	go handle_clients(p)
+	go handle_clients(pac)
 
 	for {
 		conn, err := ln.Accept()
@@ -69,7 +69,7 @@ func main() {
 			continue
 		}
 
-		go client_registry(conn, p)
+		go client_registry(conn, pac)
 	}
 }
 
@@ -159,12 +159,12 @@ func handle_clients(pac chan Packet) {
 	}
 }
 
-func client_registry(conn net.Conn, p chan Packet) {
+func client_registry(conn net.Conn, pac chan Packet) {
 	buffer := make([]byte, M_BUFF_S)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
-			p <- Packet{
+			pac <- Packet{
 				Type_t:  P_disconnected,
 				Conn:    conn,
 				Payload: conn.RemoteAddr().String(),
@@ -176,7 +176,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 		if n > PAYLOAD_PADD {
 			switch buffer[0] {
 			case 'L': // login
-				p <- Packet{
+				pac <- Packet{
 					Type_t:  P_login,
 					Conn:    conn,
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
@@ -184,7 +184,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 				return
 
 			case 'S': // signup
-				p <- Packet{
+				pac <- Packet{
 					Type_t:  P_signup,
 					Conn:    conn,
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
