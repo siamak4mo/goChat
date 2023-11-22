@@ -93,7 +93,7 @@ func (s *Server) handle_clients() {
 					// disconnected before authentication
 					log.Printf("ANONYMOUS DISCONNECTED")
 				} else {
-					log.Printf("%s DISCONNECTED\n", p.User.Username)
+					log.Printf("%s disconnected\n", p.User.Username)
 				}
 				delete(s.Clients, p.Payload)
 			}
@@ -109,7 +109,7 @@ func (s *Server) handle_clients() {
 				p.User = u
 				if !s.username_exist(u.Username) {
 					s.Clients[p.Conn.RemoteAddr().String()] = &p
-					log.Printf("%s CONNECTED\n", u.Username)
+					log.Printf("%s loged in\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
 
 					go s.listen_client(p.Conn, u) // handle messages
@@ -144,7 +144,7 @@ func (s *Server) handle_clients() {
 					tk.MkToken()
 
 					p.Conn.Write([]byte("Token: " + tk.Token + "\n"))
-					log.Printf("%s just registered\n", p.Payload)
+					log.Printf("%s registered\n", p.Payload)
 				} else {
 					p.Conn.Write([]byte("User Already exists\n"))
 				}
