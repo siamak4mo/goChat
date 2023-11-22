@@ -29,7 +29,7 @@ type Packet struct {
 	Conn    net.Conn
 	Payload string
 	User    User_t
-	Type    Packet_t
+	Type_t  Packet_t
 }
 
 // map from client "IP:PORT" -> login packet
@@ -63,7 +63,7 @@ func handle_clients(pac chan Packet) {
 	for {
 		p := <-pac
 
-		switch p.Type {
+		switch p.Type_t {
 		case P_disconnected:
 			if len(p.Payload) != 0 {
 				log.Printf("%s DISCONNECTED\n", p.Payload)
@@ -135,7 +135,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 		n, err := conn.Read(buffer)
 		if err != nil {
 			p <- Packet{
-				Type:    P_disconnected,
+				Type_t:  P_disconnected,
 				Conn:    conn,
 				Payload: conn.RemoteAddr().String(),
 			}
@@ -147,7 +147,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 			switch buffer[0] {
 			case 'L': // login
 				p <- Packet{
-					Type:    P_login,
+					Type_t:  P_login,
 					Conn:    conn,
 					Payload: string(buffer[2 : n-1]),
 				}
@@ -155,7 +155,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 
 			case 'S': // signup
 				p <- Packet{
-					Type:    P_signup,
+					Type_t:  P_signup,
 					Conn:    conn,
 					Payload: string(buffer[2 : n-1]),
 				}
@@ -171,7 +171,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 		n, err := conn.Read(buffer)
 		if err != nil {
 			pac <- Packet{
-				Type:    P_disconnected,
+				Type_t:  P_disconnected,
 				Conn:    conn,
 				Payload: conn.RemoteAddr().String(),
 			}
@@ -182,7 +182,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 			switch buffer[0] {
 			case 'T': // text message
 				pac <- Packet{
-					Type:    P_new_message,
+					Type_t:  P_new_message,
 					Conn:    conn,
 					Payload: string(buffer[2:n]),
 					User:    u,
