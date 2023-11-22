@@ -1,7 +1,9 @@
 package stoken
 
 import (
+	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
@@ -21,7 +23,7 @@ type Token_t struct {
 
 func New(cfg config.Sconfig) *Token_t {
 	return &Token_t{
-		hasher: sha256.New(),
+		hasher: GetHasher(cfg),
 		Conf:   cfg,
 	}
 }
@@ -29,7 +31,7 @@ func New(cfg config.Sconfig) *Token_t {
 func New_s(token string, cfg config.Sconfig) *Token_t {
 	return &Token_t{
 		Token:  token,
-		hasher: sha256.New(),
+		hasher: GetHasher(cfg),
 		Conf:   cfg,
 	}
 }
@@ -42,9 +44,23 @@ func New_b(bearer_token string, cfg config.Sconfig) (*Token_t, error) {
 
 	return &Token_t{
 		Token:  bearer_token[len(cfg.Token.Bearer)+1:],
-		hasher: sha256.New(),
+		hasher: GetHasher(cfg),
 		Conf:   cfg,
 	}, nil
+}
+
+func GetHasher(c config.Sconfig) hash.Hash {
+	if strings.Compare(c.Token.HashAlg, "sha256") == 0 {
+		return sha256.New()
+	}
+	if strings.Compare(c.Token.HashAlg, "sha256") == 0 {
+		return sha1.New()
+	}
+	if strings.Compare(c.Token.HashAlg, "sha256") == 0 {
+		return sha512.New()
+	}
+
+	return nil
 }
 
 func (t *Token_t) parse() error {
