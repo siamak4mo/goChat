@@ -42,39 +42,69 @@ type Packet struct {
 	Type_t  Packet_t
 }
 
-// map from client "IP:PORT" -> login packet
-var clients = map[string]*Packet{}
+type Sconfig struct {
+	Laddr         string
+	Token_Diam    string
+	P_payload_pad uint
+	// TODO: log config
+}
+
+type Server struct {
+	net.Listener
+	Pac     chan Packet
+	Clients map[string]*Packet
+	Conf    Sconfig
+}
 
 func (u *User_t) String() string {
 	return "Username: " + u.Username + "\nSignature: " + u.Signature + "\n"
 }
 
-func main() {
-	log.Println("INITIALIZING server")
-
-	ln, err := net.Listen("tcp", LISTEN)
-	if err != nil {
-		log.Fatalf("Could open port%s\n", LPORT)
+func New() *Server {
+	return &Server{
+		Conf: Sconfig{
+			Laddr: LISTEN, Token_Diam: ".", P_payload_pad: 3,
+		},
+		Pac:     make(chan Packet),
+		Clients: map[string]*Packet{},
 	}
+}
+
+func (s *Server) serve() error {
+	ln, err := net.Listen("tcp", s.Conf.Laddr)
+	if err != nil {
+		return err
+	}
+
+	s.Listener = ln
 	log.Printf("Listening on %s\n", LISTEN)
 
-	pac := make(chan Packet)
-
-	go handle_clients(pac)
+	go s.handle_clients(s.Pac, s.Clients)
 
 	for {
-		conn, err := ln.Accept()
+		conn, err := s.Listener.Accept()
 		if err != nil {
 			log.Println("Could not accept a connection")
 			continue
 		}
 
-		go client_registry(conn, pac)
+		go client_registry(conn, s.Pac)
+	}
+}
+
+func main() {
+	log.Println("INITIALIZING server")
+
+	s := New()
+	err := s.serve()
+
+	if err != nil {
+		log.Fatalf("Could not open port to listen %s\n", s.Conf.Laddr)
 	}
 }
 
 // main logic
-func handle_clients(pac chan Packet) {
+func (s *Server) handle_clients(pac chan Packet, clients map[string]*Packet) {
 	for {
 		p := <-pac
 
@@ -99,7 +129,7 @@ func handle_clients(pac chan Packet) {
 					Signature: tk.Signature,
 				}
 				p.User = u
-				if !username_exist(u.Username) {
+				if !s.username_exist(u.Username) {
 					clients[p.Conn.RemoteAddr().String()] = &p
 					log.Printf("%s CONNECTED\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
@@ -130,7 +160,7 @@ func handle_clients(pac chan Packet) {
 				p.Conn.Write([]byte("Invalid username\n"))
 				p.Conn.Close()
 			} else {
-				if !username_exist(p.Payload) {
+				if !s.username_exist(p.Payload) {
 					tk := Init_token()
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
@@ -260,11 +290,11 @@ func username_isvalid(name string) bool {
 }
 
 // check username exists in loged in clients
-func username_exist(uname string) bool {
+func (s *Server) username_exist(uname string) bool {
 	if len(uname) == 0 {
 		return true // to prevent null user addition
 	}
-	for _, login_pac := range clients {
+	for _, login_pac := range s.Clients {
 		if strings.Compare(login_pac.User.Username, uname) == 0 {
 			return true
 		}
