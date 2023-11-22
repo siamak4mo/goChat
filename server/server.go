@@ -13,10 +13,11 @@ const (
 	LISTEN       = LADDR + LPORT
 	PAYLOAD_PADD = 3
 
-	MAX_USERNAME_L = 32
-	S_BUFF_S       = 64
-	M_BUFF_S       = 256
-	B_BUFF_S       = 512
+	MAXUSERNAME_LEN = 32
+
+	S_BUFF_S = 64
+	M_BUFF_S = 256
+	B_BUFF_S = 512
 )
 
 type Packet_t uint8
@@ -246,7 +247,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 }
 
 func username_isvalid(name string) bool {
-	if len(name) > MAX_USERNAME_L || len(name) == 0 {
+	if len(name) > MAXUSERNAME_LEN || len(name) == 0 {
 		return false
 	}
 	for i := 0; i < len(name); i++ {
