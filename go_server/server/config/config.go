@@ -22,6 +22,11 @@ type Sconfig struct {
 }
 
 func New() *Sconfig {
+	// TODO: read config from file
+	return Default()
+}
+
+func Default() *Sconfig {
 	cfg := Sconfig{}
 
 	cfg.Server.Laddr = LADDR + ":" + LPORT
