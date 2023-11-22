@@ -12,6 +12,6 @@ func main() {
 	err := s.Serve()
 
 	if err != nil {
-		log.Fatalf("Could not listen -- addr: %s\n", s.Conf.Laddr)
+		log.Fatalf("Could not listen -- addr: %s\n", s.Conf.Server.Laddr)
 	}
 }

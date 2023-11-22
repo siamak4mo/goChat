@@ -35,20 +35,20 @@ func New_s(token string, cfg config.Sconfig) *Token_t {
 }
 
 func New_b(bearer_token string, cfg config.Sconfig) (*Token_t, error) {
-	if len(bearer_token) < len(cfg.Bearer)+1 ||
-		strings.Compare(cfg.Bearer, bearer_token[0:len(cfg.Bearer)]) != 0 {
+	if len(bearer_token) < len(cfg.Token.Bearer)+1 ||
+		strings.Compare(cfg.Token.Bearer, bearer_token[0:len(cfg.Token.Bearer)]) != 0 {
 		return nil, errors.New("Invalid Bearer Token")
 	}
 
 	t := Token_t{}
-	t.Token = bearer_token[len(cfg.Bearer)+1:]
+	t.Token = bearer_token[len(cfg.Token.Bearer)+1:]
 	t.hasher = sha256.New()
 	t.Conf = cfg
 	return &t, nil
 }
 
 func (t *Token_t) parse() error {
-	token_parts := strings.Split(t.Token, t.Conf.TokenDelim)
+	token_parts := strings.Split(t.Token, t.Conf.Token.TokenDelim)
 	if len(token_parts) != 2 {
 		return errors.New("invalid token")
 	}
@@ -67,11 +67,11 @@ func (t *Token_t) MkToken() {
 	username_b64 := base64.StdEncoding.EncodeToString(t.Username)
 
 	t.hasher.Write(t.Username)
-	t.hasher.Write([]byte(t.Conf.SecVal))
+	t.hasher.Write([]byte(t.Conf.Token.SecVal))
 	signature := hex.EncodeToString(t.hasher.Sum(nil))
 	t.hasher.Reset()
 
-	t.Token = fmt.Sprintf("%s%s%s", username_b64, t.Conf.TokenDelim, signature)
+	t.Token = fmt.Sprintf("%s%s%s", username_b64, t.Conf.Token.TokenDelim, signature)
 }
 
 func (t *Token_t) Validate() bool {
@@ -81,7 +81,7 @@ func (t *Token_t) Validate() bool {
 	}
 
 	t.hasher.Write(t.Username)
-	t.hasher.Write([]byte(t.Conf.SecVal))
+	t.hasher.Write([]byte(t.Conf.Token.SecVal))
 	exp_sign := hex.EncodeToString(t.hasher.Sum(nil))
 
 	if strings.Compare(t.Signature, exp_sign) != 0 {

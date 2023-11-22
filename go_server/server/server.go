@@ -60,13 +60,13 @@ func New() *Server {
 }
 
 func (s *Server) Serve() error {
-	ln, err := net.Listen("tcp", s.Conf.Laddr)
+	ln, err := net.Listen("tcp", s.Conf.Server.Laddr)
 	if err != nil {
 		return err
 	}
 
 	s.Listener = ln
-	log.Printf("Listening on %s\n", s.Conf.Laddr)
+	log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
 
 	go s.handle_clients()
 
