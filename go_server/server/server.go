@@ -100,7 +100,7 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_login:
-			tk := stoken.New_s(p.Payload) // exp payload: token  b64(username).signature
+			tk := stoken.New_s(p.Payload, s.Conf) // exp payload: token  b64(username).signature
 			if tk.Validate() {
 				u := User_t{
 					Username:  string(tk.Username),
@@ -139,7 +139,7 @@ func (s *Server) handle_clients() {
 				p.Conn.Close()
 			} else {
 				if !s.username_exist(p.Payload) {
-					tk := stoken.New()
+					tk := stoken.New(s.Conf)
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
 

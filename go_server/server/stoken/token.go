@@ -7,48 +7,48 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"server/server/config"
 	"strings"
-)
-
-const (
-	SECVAL = "MyseCretvAlue"
-	BEARER = "Bearer"
-	T_SEP  = "."
 )
 
 type Token_t struct {
 	Token     string
 	Signature string
 	hasher    hash.Hash
+	Conf      config.Sconfig
 	Username  []byte
 }
 
-func New() *Token_t { // TODO: config
+func New(cfg config.Sconfig) *Token_t {
 	t := Token_t{}
 	t.hasher = sha256.New()
-	return &t
-}
-func New_s(token string) *Token_t { // TODO: config
-	t := Token_t{}
-	t.Token = token
-	t.hasher = sha256.New()
+	t.Conf = cfg
 	return &t
 }
 
-func New_b(bearer_token string) (*Token_t, error) { // TODO: config
-	if len(bearer_token) < len(BEARER)+1 ||
-		strings.Compare(BEARER, bearer_token[0:len(BEARER)]) != 0 {
+func New_s(token string, cfg config.Sconfig) *Token_t {
+	t := Token_t{}
+	t.Token = token
+	t.hasher = sha256.New()
+	t.Conf = cfg
+	return &t
+}
+
+func New_b(bearer_token string, cfg config.Sconfig) (*Token_t, error) {
+	if len(bearer_token) < len(cfg.Bearer)+1 ||
+		strings.Compare(cfg.Bearer, bearer_token[0:len(cfg.Bearer)]) != 0 {
 		return nil, errors.New("Invalid Bearer Token")
 	}
 
 	t := Token_t{}
-	t.Token = bearer_token[len(BEARER)+1:]
+	t.Token = bearer_token[len(cfg.Bearer)+1:]
 	t.hasher = sha256.New()
+	t.Conf = cfg
 	return &t, nil
 }
 
 func (t *Token_t) parse() error {
-	token_parts := strings.Split(t.Token, T_SEP)
+	token_parts := strings.Split(t.Token, t.Conf.TokenDelim)
 	if len(token_parts) != 2 {
 		return errors.New("invalid token")
 	}
@@ -67,11 +67,11 @@ func (t *Token_t) MkToken() {
 	username_b64 := base64.StdEncoding.EncodeToString(t.Username)
 
 	t.hasher.Write(t.Username)
-	t.hasher.Write([]byte(SECVAL))
+	t.hasher.Write([]byte(t.Conf.SecVal))
 	signature := hex.EncodeToString(t.hasher.Sum(nil))
 	t.hasher.Reset()
 
-	t.Token = fmt.Sprintf("%s%s%s", username_b64, T_SEP, signature)
+	t.Token = fmt.Sprintf("%s%s%s", username_b64, t.Conf.TokenDelim, signature)
 }
 
 func (t *Token_t) Validate() bool {
@@ -81,7 +81,7 @@ func (t *Token_t) Validate() bool {
 	}
 
 	t.hasher.Write(t.Username)
-	t.hasher.Write([]byte(SECVAL))
+	t.hasher.Write([]byte(t.Conf.SecVal))
 	exp_sign := hex.EncodeToString(t.hasher.Sum(nil))
 
 	if strings.Compare(t.Signature, exp_sign) != 0 {
