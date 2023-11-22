@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"log"
@@ -89,17 +89,6 @@ func (s *Server) Serve() error {
 		}
 
 		go s.client_registry(conn)
-	}
-}
-
-func main() {
-	log.Println("INITIALIZING server")
-
-	s := New()
-	err := s.Serve()
-
-	if err != nil {
-		log.Fatalf("Could not open port to listen -- %s\n", s.Conf.Laddr)
 	}
 }
 
