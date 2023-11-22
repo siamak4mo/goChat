@@ -7,7 +7,7 @@ const (
 
 type Sconfig struct {
 	Laddr         string
-	Token_Diam    string
+	TokenDelim    string
 	// TODO: log config
 }
 
@@ -15,6 +15,6 @@ type Sconfig struct {
 func New() *Sconfig {
 	return &Sconfig{
 		Laddr: LADDR + ":" + LPORT,
-		Token_Diam: ".",
+		TokenDelim: ".",
 	}
 }
