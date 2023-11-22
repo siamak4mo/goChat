@@ -66,7 +66,11 @@ func handle_clients(pac chan Packet) {
 		switch p.Type_t {
 		case P_disconnected:
 			if len(p.Payload) != 0 {
-				log.Printf("%s DISCONNECTED\n", p.Payload)
+				if p.User == (User_t{}) {
+					log.Printf("ANONYMOUS DISCONNECTED")
+				}else{
+					log.Printf("%s DISCONNECTED\n", p.User.Username)
+				}
 				delete(clients, p.Payload)
 			}
 			break
@@ -174,6 +178,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 				Type_t:  P_disconnected,
 				Conn:    conn,
 				Payload: conn.RemoteAddr().String(),
+				User:    u,
 			}
 			return
 		}
