@@ -217,7 +217,6 @@ func username_exist(uname string) bool {
 		return true // to prevent null user addition
 	}
 	for _, login_pac := range clients {
-		log.Printf("%s ?= %s", login_pac.User.Username, uname)
 		if strings.Compare(login_pac.User.Username, uname) == 0 {
 			return true
 		}
