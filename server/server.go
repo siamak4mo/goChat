@@ -70,7 +70,7 @@ func New() *Server {
 	}
 }
 
-func (s *Server) serve() error {
+func (s *Server) Serve() error {
 	ln, err := net.Listen("tcp", s.Conf.Laddr)
 	if err != nil {
 		return err
@@ -79,16 +79,16 @@ func (s *Server) serve() error {
 	s.Listener = ln
 	log.Printf("Listening on %s\n", LISTEN)
 
-	go s.handle_clients(s.Pac, s.Clients)
+	go s.handle_clients()
 
 	for {
-		conn, err := s.Listener.Accept()
+		conn, err := ln.Accept()
 		if err != nil {
 			log.Println("Could not accept a connection")
 			continue
 		}
 
-		go client_registry(conn, s.Pac)
+		go s.client_registry(conn)
 	}
 }
 
@@ -96,17 +96,17 @@ func main() {
 	log.Println("INITIALIZING server")
 
 	s := New()
-	err := s.serve()
+	err := s.Serve()
 
 	if err != nil {
-		log.Fatalf("Could not open port to listen %s\n", s.Conf.Laddr)
+		log.Fatalf("Could not open port to listen -- %s\n", s.Conf.Laddr)
 	}
 }
 
 // main logic
-func (s *Server) handle_clients(pac chan Packet, clients map[string]*Packet) {
+func (s *Server) handle_clients() {
 	for {
-		p := <-pac
+		p := <- s.Pac
 
 		switch p.Type_t {
 		case P_disconnected:
@@ -117,7 +117,7 @@ func (s *Server) handle_clients(pac chan Packet, clients map[string]*Packet) {
 				} else {
 					log.Printf("%s DISCONNECTED\n", p.User.Username)
 				}
-				delete(clients, p.Payload)
+				delete(s.Clients, p.Payload)
 			}
 			break
 
@@ -130,11 +130,11 @@ func (s *Server) handle_clients(pac chan Packet, clients map[string]*Packet) {
 				}
 				p.User = u
 				if !s.username_exist(u.Username) {
-					clients[p.Conn.RemoteAddr().String()] = &p
+					s.Clients[p.Conn.RemoteAddr().String()] = &p
 					log.Printf("%s CONNECTED\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
 
-					go listen_client(p.Conn, pac, u) // handle messages
+					go listen_client(p.Conn, s.Pac, u) // handle messages
 				} else {
 					p.Conn.Write([]byte("Already Loged in\n"))
 				}
@@ -146,7 +146,7 @@ func (s *Server) handle_clients(pac chan Packet, clients map[string]*Packet) {
 			break
 
 		case P_new_text_message:
-			for _, c := range clients {
+			for _, c := range s.Clients {
 				if strings.Compare(c.User.Username, p.User.Username) != 0 {
 					c.Conn.Write([]byte(p.User.Username))
 					c.Conn.Write([]byte("\n"))
@@ -174,11 +174,11 @@ func (s *Server) handle_clients(pac chan Packet, clients map[string]*Packet) {
 			break
 
 		case P_logout:
-			delete(clients, p.Payload) // exp payload: string(IP:PORT)
+			delete(s.Clients, p.Payload) // exp payload: string(IP:PORT)
 			p.Conn.Write([]byte("Loged out\n"))
 			log.Printf("%s loged out", p.User.Username)
 
-			go client_registry(p.Conn, pac)
+			go s.client_registry(p.Conn)
 			break
 
 		case P_whoami:
@@ -189,12 +189,12 @@ func (s *Server) handle_clients(pac chan Packet, clients map[string]*Packet) {
 	}
 }
 
-func client_registry(conn net.Conn, pac chan Packet) {
+func (s* Server) client_registry(conn net.Conn) {
 	buffer := make([]byte, M_BUFF_S)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
-			pac <- Packet{
+			s.Pac <- Packet{
 				Type_t:  P_disconnected,
 				Conn:    conn,
 				Payload: conn.RemoteAddr().String(),
@@ -206,7 +206,7 @@ func client_registry(conn net.Conn, pac chan Packet) {
 		if n > PAYLOAD_PADD {
 			switch buffer[0] {
 			case 'L': // login
-				pac <- Packet{
+				s.Pac <- Packet{
 					Type_t:  P_login,
 					Conn:    conn,
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
@@ -214,7 +214,7 @@ func client_registry(conn net.Conn, pac chan Packet) {
 				return
 
 			case 'S': // signup
-				pac <- Packet{
+				s.Pac <- Packet{
 					Type_t:  P_signup,
 					Conn:    conn,
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
