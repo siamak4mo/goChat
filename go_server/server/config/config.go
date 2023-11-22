@@ -7,6 +7,7 @@ const (
 	SECVAL      = "MyseCretvAlue"
 	BEARER      = "Bearer"
 	TOKEN_DELIM = "."
+	HASH_ALG    = "sha256"
 )
 
 type Sconfig struct {
@@ -17,6 +18,7 @@ type Sconfig struct {
 		TokenDelim string
 		SecVal     string
 		Bearer     string
+		HashAlg    string
 	}
 	// TODO: log config
 }
@@ -34,6 +36,7 @@ func Default() *Sconfig {
 	cfg.Token.Bearer = BEARER
 	cfg.Token.TokenDelim = TOKEN_DELIM
 	cfg.Token.SecVal = SECVAL
+	cfg.Token.HashAlg = HASH_ALG
 
 	return &cfg
 }
