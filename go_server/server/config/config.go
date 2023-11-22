@@ -3,7 +3,6 @@ package config
 const (
 	LADDR        = "127.0.0.1"
 	LPORT        = "8080"
-	LISTEN       = LADDR + LPORT
 )
 
 type Sconfig struct {
