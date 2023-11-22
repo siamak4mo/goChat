@@ -92,7 +92,7 @@ func handle_clients(pac chan Packet) {
 					clients[p.Conn.RemoteAddr().String()] = &p
 					log.Printf("%s CONNECTED\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
-					
+
 					go listen_client(p.Conn, pac, u) // handle messages
 				} else {
 					p.Conn.Write([]byte("Already Loged in\n"))
