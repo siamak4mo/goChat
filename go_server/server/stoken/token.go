@@ -53,10 +53,10 @@ func GetHasher(c config.Sconfig) hash.Hash {
 	if strings.Compare(c.Token.HashAlg, "sha256") == 0 {
 		return sha256.New()
 	}
-	if strings.Compare(c.Token.HashAlg, "sha256") == 0 {
+	if strings.Compare(c.Token.HashAlg, "sha1") == 0 {
 		return sha1.New()
 	}
-	if strings.Compare(c.Token.HashAlg, "sha256") == 0 {
+	if strings.Compare(c.Token.HashAlg, "sha512") == 0 {
 		return sha512.New()
 	}
 
