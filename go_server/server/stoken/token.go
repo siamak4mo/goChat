@@ -20,18 +20,18 @@ type Token_t struct {
 }
 
 func New(cfg config.Sconfig) *Token_t {
-	t := Token_t{}
-	t.hasher = sha256.New()
-	t.Conf = cfg
-	return &t
+	return &Token_t{
+		hasher: sha256.New(),
+		Conf:   cfg,
+	}
 }
 
 func New_s(token string, cfg config.Sconfig) *Token_t {
-	t := Token_t{}
-	t.Token = token
-	t.hasher = sha256.New()
-	t.Conf = cfg
-	return &t
+	return &Token_t{
+		Token:  token,
+		hasher: sha256.New(),
+		Conf:   cfg,
+	}
 }
 
 func New_b(bearer_token string, cfg config.Sconfig) (*Token_t, error) {
@@ -40,11 +40,11 @@ func New_b(bearer_token string, cfg config.Sconfig) (*Token_t, error) {
 		return nil, errors.New("Invalid Bearer Token")
 	}
 
-	t := Token_t{}
-	t.Token = bearer_token[len(cfg.Token.Bearer)+1:]
-	t.hasher = sha256.New()
-	t.Conf = cfg
-	return &t, nil
+	return &Token_t{
+		Token:  bearer_token[len(cfg.Token.Bearer)+1:],
+		hasher: sha256.New(),
+		Conf:   cfg,
+	}, nil
 }
 
 func (t *Token_t) parse() error {
