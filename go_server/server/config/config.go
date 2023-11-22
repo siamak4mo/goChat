@@ -10,16 +10,25 @@ const (
 )
 
 type Sconfig struct {
-	Laddr      string
-	TokenDelim string
-	SecVal     string
-	Bearer     string
+	Server struct {
+		Laddr string
+	}
+	Token struct {
+		TokenDelim string
+		SecVal     string
+		Bearer     string
+	}
 	// TODO: log config
 }
 
 func New() *Sconfig {
-	return &Sconfig{
-		Laddr:      LADDR + ":" + LPORT,
-		TokenDelim: TOKEN_DELIM,
-	}
+	cfg := Sconfig{}
+
+	cfg.Server.Laddr = LADDR + ":" + LPORT
+
+	cfg.Token.Bearer = BEARER
+	cfg.Token.TokenDelim = TOKEN_DELIM
+	cfg.Token.SecVal = SECVAL
+
+	return &cfg
 }
