@@ -21,7 +21,7 @@ const (
 	P_login Packet_t = iota + 1
 	P_signup
 	P_disconnected
-	P_new_message
+	P_new_text_message
 )
 
 type User_t struct {
@@ -62,14 +62,16 @@ func main() {
 	}
 }
 
+// main logic
 func handle_clients(pac chan Packet) {
 	for {
 		p := <-pac
 
 		switch p.Type_t {
 		case P_disconnected:
-			if len(p.Payload) != 0 {
+			if len(p.Payload) != 0 { // exp payload: string(IP:PORT)
 				if p.User == (User_t{}) {
+					// disconnected before authentication
 					log.Printf("ANONYMOUS DISCONNECTED")
 				} else {
 					log.Printf("%s DISCONNECTED\n", p.User.Username)
@@ -79,7 +81,7 @@ func handle_clients(pac chan Packet) {
 			break
 
 		case P_login:
-			tk := Init_stoken(p.Payload)
+			tk := Init_stoken(p.Payload) // exp payload: token  b64(username).signature
 			if tk.Validate() {
 				u := User_t{
 					Username:  string(tk.Username),
@@ -90,7 +92,8 @@ func handle_clients(pac chan Packet) {
 					clients[p.Conn.RemoteAddr().String()] = &p
 					log.Printf("%s CONNECTED\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
-					go listen_client(p.Conn, pac, u)
+					
+					go listen_client(p.Conn, pac, u) // handle messages
 				} else {
 					p.Conn.Write([]byte("Already Loged in\n"))
 				}
@@ -101,7 +104,7 @@ func handle_clients(pac chan Packet) {
 			}
 			break
 
-		case P_new_message:
+		case P_new_text_message:
 			for _, c := range clients {
 				if c.Conn != p.Conn {
 					c.Conn.Write([]byte(p.User.Username))
@@ -175,6 +178,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
+			// user has disconnected
 			pac <- Packet{
 				Type_t:  P_disconnected,
 				Conn:    conn,
@@ -186,9 +190,10 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 
 		if n > PAYLOAD_PADD {
 			switch buffer[0] {
-			case 'T': // text message
+			case 'T':
+				// got text message
 				pac <- Packet{
-					Type_t:  P_new_message,
+					Type_t:  P_new_text_message,
 					Conn:    conn,
 					Payload: string(buffer[2:n]),
 					User:    u,
@@ -212,6 +217,7 @@ func username_isvalid(name string) bool {
 	return true
 }
 
+// check username exists in loged in clients
 func username_exist(uname string) bool {
 	if len(uname) == 0 {
 		return true // to prevent null user addition
