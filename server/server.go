@@ -8,9 +8,11 @@ import (
 )
 
 const (
-	LADDR  = "127.0.0.1"
-	LPORT  = ":8080"
-	LISTEN = LADDR + LPORT
+	LADDR          = "127.0.0.1"
+	LPORT          = ":8080"
+	LISTEN         = LADDR + LPORT
+	MAX_USERNAME_L = 32
+	PAYLOAD_PADD   = 3
 )
 
 type Packet_t uint8
@@ -146,7 +148,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 			return
 		}
 
-		if n > 3 {
+		if n > PAYLOAD_PADD {
 			switch buffer[0] {
 			case 'L': // login
 				p <- Packet{
@@ -182,7 +184,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 			return
 		}
 
-		if n > 3 {
+		if n > PAYLOAD_PADD {
 			switch buffer[0] {
 			case 'T': // text message
 				pac <- Packet{
@@ -198,7 +200,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 }
 
 func username_isvalid(name string) bool {
-	if len(name) > 32 || len(name) == 0 {
+	if len(name) > MAX_USERNAME_L || len(name) == 0 {
 		return false
 	}
 	for i := 0; i < len(name); i++ {
