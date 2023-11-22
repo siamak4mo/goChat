@@ -3,16 +3,13 @@ package server
 import (
 	"log"
 	"net"
+	"server/server/config"
 	"strings"
 	"unicode"
 )
 
 const (
-	LADDR        = "127.0.0.1"
-	LPORT        = ":8080"
-	LISTEN       = LADDR + LPORT
-	PAYLOAD_PADD = 3
-
+	PAYLOAD_PADD    = 3
 	MAXUSERNAME_LEN = 32
 
 	S_BUFF_S = 64
@@ -42,18 +39,11 @@ type Packet struct {
 	Type_t  Packet_t
 }
 
-type Sconfig struct {
-	Laddr         string
-	Token_Diam    string
-	P_payload_pad uint
-	// TODO: log config
-}
-
 type Server struct {
 	net.Listener
 	Pac     chan Packet
 	Clients map[string]*Packet
-	Conf    Sconfig
+	Conf    config.Sconfig
 }
 
 func (u *User_t) String() string {
@@ -62,9 +52,7 @@ func (u *User_t) String() string {
 
 func New() *Server {
 	return &Server{
-		Conf: Sconfig{
-			Laddr: LISTEN, Token_Diam: ".", P_payload_pad: 3,
-		},
+		Conf:    *config.NewConfig(),
 		Pac:     make(chan Packet),
 		Clients: map[string]*Packet{},
 	}
@@ -77,7 +65,7 @@ func (s *Server) Serve() error {
 	}
 
 	s.Listener = ln
-	log.Printf("Listening on %s\n", LISTEN)
+	log.Printf("Listening on %s\n", s.Conf.Laddr)
 
 	go s.handle_clients()
 
