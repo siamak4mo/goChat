@@ -8,11 +8,15 @@ import (
 )
 
 const (
-	LADDR          = "127.0.0.1"
-	LPORT          = ":8080"
-	LISTEN         = LADDR + LPORT
+	LADDR        = "127.0.0.1"
+	LPORT        = ":8080"
+	LISTEN       = LADDR + LPORT
+	PAYLOAD_PADD = 3
+
 	MAX_USERNAME_L = 32
-	PAYLOAD_PADD   = 3
+	S_BUFF_S       = 64
+	M_BUFF_S       = 256
+	B_BUFF_S       = 512
 )
 
 type Packet_t uint8
@@ -138,7 +142,7 @@ func handle_clients(pac chan Packet) {
 }
 
 func client_registry(conn net.Conn, p chan Packet) {
-	buffer := make([]byte, 256)
+	buffer := make([]byte, M_BUFF_S)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
@@ -174,7 +178,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 }
 
 func listen_client(conn net.Conn, pac chan Packet, u User_t) {
-	buffer := make([]byte, 64)
+	buffer := make([]byte, B_BUFF_S)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
