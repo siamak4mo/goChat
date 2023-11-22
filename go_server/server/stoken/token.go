@@ -1,4 +1,4 @@
-package server
+package stoken
 
 import (
 	"crypto/sha256"
@@ -23,19 +23,19 @@ type Token_t struct {
 	Username  []byte
 }
 
-func Init_token() *Token_t { // TODO: config
+func New() *Token_t { // TODO: config
 	t := Token_t{}
 	t.hasher = sha256.New()
 	return &t
 }
-func Init_stoken(token string) *Token_t { // TODO: config
+func New_s(token string) *Token_t { // TODO: config
 	t := Token_t{}
 	t.Token = token
 	t.hasher = sha256.New()
 	return &t
 }
 
-func Init_btoken(bearer_token string) (*Token_t, error) { // TODO: config
+func New_b(bearer_token string) (*Token_t, error) { // TODO: config
 	if len(bearer_token) < len(BEARER)+1 ||
 		strings.Compare(BEARER, bearer_token[0:len(BEARER)]) != 0 {
 		return nil, errors.New("Invalid Bearer Token")
