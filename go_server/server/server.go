@@ -52,7 +52,7 @@ func (u *User_t) String() string {
 
 func New() *Server {
 	return &Server{
-		Conf:    *config.NewConfig(),
+		Conf:    *config.New(),
 		Pac:     make(chan Packet),
 		Clients: map[string]*Packet{},
 	}

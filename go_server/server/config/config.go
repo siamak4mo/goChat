@@ -13,7 +13,7 @@ type Sconfig struct {
 }
 
 
-func NewConfig() *Sconfig {
+func New() *Sconfig {
 	return &Sconfig{
 		Laddr: LADDR + ":" + LPORT,
 		Token_Diam: ".",
