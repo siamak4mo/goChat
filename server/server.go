@@ -210,7 +210,9 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 					User:    u,
 				}
 				break
-
+			}
+		} else if n > 0 {
+			switch buffer[0] {
 			case 'L':
 				// to logout
 				pac <- Packet{
@@ -220,6 +222,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 					User:    u,
 				}
 				return
+
 			}
 		}
 	}
