@@ -69,7 +69,7 @@ func handle_clients(pac chan Packet) {
 			if len(p.Payload) != 0 {
 				if p.User == (User_t{}) {
 					log.Printf("ANONYMOUS DISCONNECTED")
-				}else{
+				} else {
 					log.Printf("%s DISCONNECTED\n", p.User.Username)
 				}
 				delete(clients, p.Payload)
@@ -84,12 +84,12 @@ func handle_clients(pac chan Packet) {
 					Signature: tk.Signature,
 				}
 				p.User = u
-				if !username_exist(u.Username){
+				if !username_exist(u.Username) {
 					clients[p.Conn.RemoteAddr().String()] = &p
 					log.Printf("%s CONNECTED\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
 					go listen_client(p.Conn, pac, u)
-				}else{
+				} else {
 					p.Conn.Write([]byte("Already Loged in\n"))
 				}
 			} else {
