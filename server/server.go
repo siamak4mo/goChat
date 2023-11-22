@@ -168,7 +168,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 				p <- Packet{
 					Type_t:  P_login,
 					Conn:    conn,
-					Payload: string(buffer[2 : n-1]),
+					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
 				}
 				return
 
@@ -176,7 +176,7 @@ func client_registry(conn net.Conn, p chan Packet) {
 				p <- Packet{
 					Type_t:  P_signup,
 					Conn:    conn,
-					Payload: string(buffer[2 : n-1]),
+					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
 				}
 				break
 			}
@@ -206,7 +206,7 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 				pac <- Packet{
 					Type_t:  P_new_text_message,
 					Conn:    conn,
-					Payload: string(buffer[2:n]),
+					Payload: string(buffer[PAYLOAD_PADD-1 : n]),
 					User:    u,
 				}
 				break
