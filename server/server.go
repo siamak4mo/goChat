@@ -84,10 +84,14 @@ func handle_clients(pac chan Packet) {
 					Signature: tk.Signature,
 				}
 				p.User = u
-				clients[p.Conn.RemoteAddr().String()] = &p
-				log.Printf("%s CONNECTED\n", u.Username)
-				p.Conn.Write([]byte("Loged in\n"))
-				go listen_client(p.Conn, pac, u)
+				if !username_exist(u.Username){
+					clients[p.Conn.RemoteAddr().String()] = &p
+					log.Printf("%s CONNECTED\n", u.Username)
+					p.Conn.Write([]byte("Loged in\n"))
+					go listen_client(p.Conn, pac, u)
+				}else{
+					p.Conn.Write([]byte("Already Loged in\n"))
+				}
 			} else {
 				log.Printf("%s LOGIN FAILED\n", p.Payload)
 				p.Conn.Write([]byte("Login Failed\n"))
