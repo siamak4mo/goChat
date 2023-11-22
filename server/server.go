@@ -24,6 +24,7 @@ type Packet_t uint8
 const (
 	P_login Packet_t = iota + 1
 	P_signup
+	P_logout
 	P_disconnected
 	P_new_text_message
 )
@@ -135,6 +136,14 @@ func handle_clients(pac chan Packet) {
 				}
 			}
 			break
+
+		case P_logout:
+			delete(clients, p.Payload) // exp payload: string(IP:PORT)
+			p.Conn.Write([]byte("Loged out\n"))
+			log.Printf("%s loged out", p.User.Username)
+
+			go client_registry(p.Conn, pac)
+			break
 		}
 	}
 }
@@ -201,6 +210,16 @@ func listen_client(conn net.Conn, pac chan Packet, u User_t) {
 					User:    u,
 				}
 				break
+
+			case 'L':
+				// to logout
+				pac <- Packet{
+					Type_t:  P_logout,
+					Conn:    conn,
+					Payload: conn.RemoteAddr().String(),
+					User:    u,
+				}
+				return
 			}
 		}
 	}
