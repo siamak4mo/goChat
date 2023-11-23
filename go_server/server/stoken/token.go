@@ -23,7 +23,7 @@ type Token_t struct {
 
 func New(cfg config.Sconfig) *Token_t {
 	return &Token_t{
-		hasher: GetHasher(cfg),
+		hasher: GetHasher(cfg.Token.HashAlg),
 		Conf:   cfg,
 	}
 }
@@ -31,7 +31,7 @@ func New(cfg config.Sconfig) *Token_t {
 func New_s(token string, cfg config.Sconfig) *Token_t {
 	return &Token_t{
 		Token:  token,
-		hasher: GetHasher(cfg),
+		hasher: GetHasher(cfg.Token.HashAlg),
 		Conf:   cfg,
 	}
 }
@@ -44,19 +44,19 @@ func New_b(bearer_token string, cfg config.Sconfig) (*Token_t, error) {
 
 	return &Token_t{
 		Token:  bearer_token[len(cfg.Token.Bearer)+1:],
-		hasher: GetHasher(cfg),
+		hasher: GetHasher(cfg.Token.HashAlg),
 		Conf:   cfg,
 	}, nil
 }
 
-func GetHasher(c config.Sconfig) hash.Hash {
-	if strings.Compare(c.Token.HashAlg, "sha256") == 0 {
+func GetHasher(hash_name string) hash.Hash {
+	if strings.Compare(hash_name, "sha256") == 0 {
 		return sha256.New()
 	}
-	if strings.Compare(c.Token.HashAlg, "sha1") == 0 {
+	if strings.Compare(hash_name, "sha1") == 0 {
 		return sha1.New()
 	}
-	if strings.Compare(c.Token.HashAlg, "sha512") == 0 {
+	if strings.Compare(hash_name, "sha512") == 0 {
 		return sha512.New()
 	}
 
