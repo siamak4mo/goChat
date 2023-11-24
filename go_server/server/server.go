@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"server/server/config"
@@ -51,8 +52,8 @@ type Server struct {
 }
 
 func (u *User_t) String() string {
-	return ("Username: " + u.Username + "\nSignature: " +
-		u.Signature + "\nChat: " + u.Chat + "\n")
+	return fmt.Sprintf("Username: %s\nSignature: %s\nChat: %s\n",
+		u.Username, u.Signature, u.Chat)
 }
 
 func New() *Server {
