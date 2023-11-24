@@ -11,15 +11,16 @@ const (
 )
 
 type Sconfig struct {
-	Server struct {
-		InitialChats map[string]string
-		Laddr        string
-	}
 	Token struct {
 		TokenDelim string
 		SecVal     string
 		Bearer     string
 		HashAlg    string
+	}
+	Server struct {
+		Laddr        string
+		IChats       []string
+		IChatBanners []string
 	}
 	// TODO: log config
 }
@@ -39,10 +40,14 @@ func Default() *Sconfig {
 	cfg.Token.SecVal = SECVAL
 	cfg.Token.HashAlg = HASH_ALG
 
-	cfg.Server.InitialChats = make(map[string]string)
-	chat := cfg.Server.InitialChats
-	chat["Echo"] = "Welcome to the `Echo` chat!"
-	chat["HCK"] = "Welcome to the `Hack` chat :D"
+	cfg.Server.IChats = []string{
+		"EcHo",
+		"HCK",
+	}
+	cfg.Server.IChatBanners = []string{
+		"Welcome to the `echo` chat!",
+		"Welcome to the `Hack` chat :D",
+	}
 
 	return &cfg
 }

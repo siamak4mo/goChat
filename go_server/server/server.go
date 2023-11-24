@@ -129,8 +129,8 @@ func (s *Server) Serve() error {
 	s.Listener = ln
 	log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
 
-	for k, v := range s.Conf.Server.InitialChats {
-		s.NewChat(k, v)
+	for i, name := range s.Conf.Server.IChats {
+		s.NewChat(name, s.Conf.Server.IChatBanners[i])
 	}
 
 	go s.handle_clients()
