@@ -148,11 +148,12 @@ func (s *Server) handle_clients() {
 				p.Conn.Write([]byte("Chat doesn't exist\n"))
 			} else {
 				_lp := s.Clients[p.Conn.RemoteAddr().String()]
-				_lp.User.Chat = p.Payload
+				delete(s.Chats[_lp.User.Chat], _lp)
 
-				p.Conn.Write([]byte("Welcome to " + p.Payload + "\n"))
+				_lp.User.Chat = p.Payload
 				s.Chats[p.Payload][_lp] = true
 
+				p.Conn.Write([]byte("Welcome to " + p.Payload + "\n"))
 				go s.listen_client(p.Conn, _lp.User) // handle messages
 			}
 			break
@@ -271,6 +272,14 @@ func (s *Server) listen_client(conn net.Conn, u User_t) {
 					User:    u,
 				}
 				break
+
+			case 'C':
+				s.Pac <- Packet{
+					Type_t:  P_select_chat,
+					Conn:    conn,
+					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
+				}
+				return
 			}
 		} else if n > 0 {
 			switch buffer[0] {
