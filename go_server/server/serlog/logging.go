@@ -1,4 +1,4 @@
-package log
+package serlog
 
 import (
 	"fmt"
@@ -15,9 +15,9 @@ const (
 	Panic
 )
 
-var (
-	loglevel uint
-)
+type Log struct {
+	LogLevel uint
+}
 
 func level2str(level Lev) string {
 	switch level{
@@ -30,12 +30,14 @@ func level2str(level Lev) string {
 	return ""
 }
 
-func New(cfg config.Config){
-	loglevel = cfg.Log.LogLevel
+func New(cfg config.Config) *Log{
+	return &Log{
+		LogLevel: cfg.Log.LogLevel,
+	}
 }
 
-func Logf(level Lev, format string, args ...any){
-	if level >= Lev(loglevel) {
+func (l Log) Logf(level Lev, format string, args ...any){
+	if level >= Lev(l.LogLevel) {
 		fmt.Print(level2str(level))
 		fmt.Printf(format, args...)
 	}
