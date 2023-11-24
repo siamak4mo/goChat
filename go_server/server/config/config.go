@@ -12,7 +12,8 @@ const (
 
 type Sconfig struct {
 	Server struct {
-		Laddr string
+		InitialChats map[string]string
+		Laddr        string
 	}
 	Token struct {
 		TokenDelim string
@@ -37,6 +38,11 @@ func Default() *Sconfig {
 	cfg.Token.TokenDelim = TOKEN_DELIM
 	cfg.Token.SecVal = SECVAL
 	cfg.Token.HashAlg = HASH_ALG
+
+	cfg.Server.InitialChats = make(map[string]string)
+	chat := cfg.Server.InitialChats
+	chat["Echo"] = "Welcome to the `Echo` chat!"
+	chat["HCK"] = "Welcome to the `Hack` chat :D"
 
 	return &cfg
 }
