@@ -192,9 +192,7 @@ func (s *Server) handle_clients() {
 		case P_new_text_message:
 			for c := range s.Chats[p.User.ChatKey].Members {
 				if strings.Compare(c.User.Username, p.User.Username) != 0 {
-					c.Conn.Write([]byte(p.User.Username))
-					c.Conn.Write([]byte("\n"))
-					c.Conn.Write([]byte(p.Payload))
+					go c.Conn.Write([]byte(p.User.Username + "\n" + p.Payload))
 				}
 			}
 			break
