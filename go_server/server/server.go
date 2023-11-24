@@ -170,22 +170,22 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_select_chat:
-			_lp := s.Clients[p.RemoteAddr()]
+			p_login := s.Clients[p.RemoteAddr()]
 			if !s.HasChat(p.Payload) {
 				p.Conn.Write([]byte("Chat doesn't exist\n"))
-				go s.listen_client(p.Conn, _lp.User) // handle messages
+				go s.listen_client(p.Conn, p_login.User) // handle messages
 			} else {
-				if len(_lp.User.ChatKey) != 0 {
-					delete(s.Chats[_lp.User.ChatKey].Members, _lp)
-					_lp.User.ChatKey = p.Payload
-					s.Chats[p.Payload].Members[_lp] = true
+				if len(p_login.User.ChatKey) != 0 {
+					delete(s.Chats[p_login.User.ChatKey].Members, p_login)
+					p_login.User.ChatKey = p.Payload
+					s.Chats[p.Payload].Members[p_login] = true
 				} else {
-					_lp.User.ChatKey = p.Payload
-					s.Chats[p.Payload].Members[_lp] = true
+					p_login.User.ChatKey = p.Payload
+					s.Chats[p.Payload].Members[p_login] = true
 				}
 
 				p.Conn.Write([]byte(s.Chats[p.Payload].MOTD + "\n"))
-				go s.listen_client(p.Conn, _lp.User) // handle messages
+				go s.listen_client(p.Conn, p_login.User) // handle messages
 			}
 			break
 
