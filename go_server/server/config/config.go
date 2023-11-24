@@ -22,7 +22,9 @@ type Config struct {
 		IChats       []string
 		IChatBanners []string
 	}
-	// TODO: log config
+	Log struct {
+		LogLevel uint
+	}
 }
 
 func New() *Config {
@@ -48,6 +50,8 @@ func Default() *Config {
 		"Welcome to the `echo` chat!",
 		"Welcome to the `Hack` chat :D",
 	}
+
+	cfg.Log.LogLevel = 0  // debug log level
 
 	return &cfg
 }
