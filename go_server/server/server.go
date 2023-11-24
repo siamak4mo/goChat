@@ -90,6 +90,10 @@ func (p *Packet) RemoteAddr() string {
 	return p.Conn.RemoteAddr().String()
 }
 
+func (p *Packet) Swrite(data string) {
+	p.Conn.Write([]byte(data))
+}
+
 func newChat(name string, banner string) *Chat {
 	return &Chat{
 		Name:    name,
@@ -156,14 +160,14 @@ func (s *Server) handle_clients() {
 				if !s.username_exist(u.Username) {
 					s.Clients[p.RemoteAddr()] = &p
 					log.Printf("%s loged in\n", u.Username)
-					p.Conn.Write([]byte("Loged in\n"))
+					p.Swrite("Loged in\n")
 
 				} else {
-					p.Conn.Write([]byte("Already Loged in\n"))
+					p.Swrite("Already Loged in\n")
 				}
 			} else {
 				log.Printf("%s LOGIN FAILED\n", p.Payload)
-				p.Conn.Write([]byte("Login Failed\n"))
+				p.Swrite("Login Failed\n")
 				p.Conn.Close()
 			}
 			break
@@ -171,7 +175,7 @@ func (s *Server) handle_clients() {
 		case P_select_chat:
 			p_login := s.Clients[p.RemoteAddr()]
 			if !s.HasChat(p.Payload) {
-				p.Conn.Write([]byte("Chat doesn't exist\n"))
+				p.Swrite("Chat doesn't exist\n")
 				go s.listen_client(p.Conn, p_login.User) // handle messages
 			} else {
 				if len(p_login.User.ChatKey) != 0 {
@@ -183,7 +187,7 @@ func (s *Server) handle_clients() {
 					s.Chats[p.Payload].Members[p_login] = true
 				}
 
-				p.Conn.Write([]byte(s.Chats[p.Payload].MOTD + "\n"))
+				p.Swrite(s.Chats[p.Payload].MOTD + "\n")
 				go s.listen_client(p.Conn, p_login.User) // handle messages
 			}
 			break
@@ -191,14 +195,14 @@ func (s *Server) handle_clients() {
 		case P_new_text_message:
 			for c := range s.Chats[p.User.ChatKey].Members {
 				if strings.Compare(c.User.Username, p.User.Username) != 0 {
-					go c.Conn.Write([]byte(p.User.Username + "\n" + p.Payload))
+					go c.Swrite(p.User.Username + "\n" + p.Payload)
 				}
 			}
 			break
 
 		case P_signup:
 			if !username_isvalid(p.Payload) {
-				p.Conn.Write([]byte("Invalid username\n"))
+				p.Swrite("Invalid username\n")
 				p.Conn.Close()
 			} else {
 				if !s.username_exist(p.Payload) {
@@ -206,25 +210,25 @@ func (s *Server) handle_clients() {
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
 
-					p.Conn.Write([]byte("Token: " + tk.Token + "\n"))
+					p.Swrite("Token: " + tk.Token + "\n")
 					log.Printf("%s registered\n", p.Payload)
 				} else {
-					p.Conn.Write([]byte("User Already exists\n"))
+					p.Swrite("User Already exists\n")
 				}
 			}
 			break
 
 		case P_logout:
 			delete(s.Clients, p.Payload) // exp payload: string(IP:PORT)
-			p.Conn.Write([]byte("Loged out\n"))
+			p.Swrite("Loged out\n")
 			log.Printf("%s loged out", p.User.Username)
 
 			go s.client_registry(p.Conn)
 			break
 
 		case P_whoami:
-			p.Conn.Write([]byte(p.User.String()))
-			p.Conn.Write([]byte(fmt.Sprintf("Chat: %s\nAddr: %s\n", s.ChatName(p), p.Payload)))
+			p.Swrite(p.User.String())
+			p.Swrite(fmt.Sprintf("Chat: %s\nAddr: %s\n", s.ChatName(p), p.Payload))
 			break
 		}
 	}
