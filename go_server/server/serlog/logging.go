@@ -80,3 +80,7 @@ func (l Log) Panicf(format string, fun func(), args ...any) {
 		l.logf(Panic, exit, format, args...)
 	}
 }
+
+func (l Log) Printf(format string, args ...any) {
+	fmt.Printf(format, args...)
+}
