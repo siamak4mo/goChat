@@ -15,6 +15,7 @@ import (
 const (
 	PAYLOAD_PADD    = 3
 	MAXUSERNAME_LEN = 32
+	CHATID_LEN      = 16
 
 	S_BUFF_S = 64
 	M_BUFF_S = 256
@@ -115,7 +116,7 @@ func newChat(name string, banner string) *Chat {
 }
 
 func (s *Server) NewChat(name string, banner string) {
-	key := hex.EncodeToString(sha1.New().Sum([]byte(name)))[0:16]
+	key := hex.EncodeToString(sha1.New().Sum([]byte(name)))[0:CHATID_LEN]
 	s.Chats[key] = newChat(name, banner)
 }
 
@@ -252,7 +253,7 @@ func (s *Server) handle_clients() {
 
 		case P_list_chats:
 			for k, v := range s.Chats {
-				go p.Swrite(fmt.Sprintf("ChatID: %-16s -- Name: %s\n", k, v.Name), s)
+				go p.Swrite(fmt.Sprintf("ChatID: %s -- Name: %s\n", k, v.Name), s)
 			}
 			break
 		}
