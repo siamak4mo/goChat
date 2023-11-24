@@ -56,8 +56,8 @@ type Server struct {
 }
 
 func (u *User_t) String() string {
-	return fmt.Sprintf("Username: %s\nSignature: %s\nChat: %s\n",
-		u.Username, u.Signature, u.ChatKey)
+	return fmt.Sprintf("Username: %s\nSignature: %s\n",
+		u.Username, u.Signature)
 }
 
 func New() *Server {
@@ -76,6 +76,19 @@ func (s *Server) HasChat(name string) bool {
 		}
 	}
 	return false
+}
+
+func (s Server) ChatName(p Packet) string {
+	res := s.Chats[p.User.ChatKey]
+	if res == nil || len(res.Name) == 0 {
+		return "Internal Server Error"
+	} else {
+		return res.Name
+	}
+}
+
+func (p *Packet) RemoteAddr() string {
+	return p.Conn.RemoteAddr().String()
 }
 
 func newChat(name string, banner string) *Chat {
@@ -142,7 +155,7 @@ func (s *Server) handle_clients() {
 				}
 				p.User = u
 				if !s.username_exist(u.Username) {
-					s.Clients[p.Conn.RemoteAddr().String()] = &p
+					s.Clients[p.RemoteAddr()] = &p
 					log.Printf("%s loged in\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
 
@@ -157,7 +170,7 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_select_chat:
-			_lp := s.Clients[p.Conn.RemoteAddr().String()]
+			_lp := s.Clients[p.RemoteAddr()]
 			if !s.HasChat(p.Payload) {
 				p.Conn.Write([]byte("Chat doesn't exist\n"))
 				go s.listen_client(p.Conn, _lp.User) // handle messages
@@ -214,7 +227,7 @@ func (s *Server) handle_clients() {
 
 		case P_whoami:
 			p.Conn.Write([]byte(p.User.String()))
-			p.Conn.Write([]byte("Addr: " + p.Conn.RemoteAddr().String() + "\n"))
+			p.Conn.Write([]byte(fmt.Sprintf("Chat: %s\nAddr: %s\n", s.ChatName(p), p.Payload)))
 			break
 		}
 	}
@@ -314,9 +327,10 @@ func (s *Server) listen_client(conn net.Conn, u User_t) {
 			case 'W':
 				// send whoami
 				s.Pac <- Packet{
-					Type_t: P_whoami,
-					Conn:   conn,
-					User:   u,
+					Type_t:  P_whoami,
+					Conn:    conn,
+					Payload: conn.RemoteAddr().String(),
+					User:    u,
 				}
 			}
 		}
