@@ -10,7 +10,7 @@ const (
 	HASH_ALG    = "sha256"
 )
 
-type Sconfig struct {
+type Config struct {
 	Token struct {
 		TokenDelim string
 		SecVal     string
@@ -25,13 +25,13 @@ type Sconfig struct {
 	// TODO: log config
 }
 
-func New() *Sconfig {
+func New() *Config {
 	// TODO: read config from file
 	return Default()
 }
 
-func Default() *Sconfig {
-	cfg := Sconfig{}
+func Default() *Config {
+	cfg := Config{}
 
 	cfg.Server.Laddr = LADDR + ":" + LPORT
 

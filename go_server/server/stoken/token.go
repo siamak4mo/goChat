@@ -17,18 +17,18 @@ type Token_t struct {
 	Token     string
 	Signature string
 	hasher    hash.Hash
-	Conf      *config.Sconfig
+	Conf      *config.Config
 	Username  []byte
 }
 
-func New(cfg *config.Sconfig) *Token_t {
+func New(cfg *config.Config) *Token_t {
 	return &Token_t{
 		hasher: GetHasher(cfg.Token.HashAlg),
 		Conf:   cfg,
 	}
 }
 
-func New_s(token string, cfg *config.Sconfig) *Token_t {
+func New_s(token string, cfg *config.Config) *Token_t {
 	return &Token_t{
 		Token:  token,
 		hasher: GetHasher(cfg.Token.HashAlg),
@@ -36,7 +36,7 @@ func New_s(token string, cfg *config.Sconfig) *Token_t {
 	}
 }
 
-func New_b(bearer_token string, cfg *config.Sconfig) (*Token_t, error) {
+func New_b(bearer_token string, cfg *config.Config) (*Token_t, error) {
 	if len(bearer_token) < len(cfg.Token.Bearer)+1 ||
 		strings.Compare(cfg.Token.Bearer, bearer_token[0:len(cfg.Token.Bearer)]) != 0 {
 		return nil, errors.New("Invalid Bearer Token")

@@ -56,7 +56,7 @@ type Server struct {
 	Pac     chan Packet
 	Clients map[string]*Packet
 	Chats   map[string]*Chat
-	Conf    *config.Sconfig
+	Conf    *config.Config
 }
 
 func (u *User_t) String() string {

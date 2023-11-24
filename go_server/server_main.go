@@ -9,7 +9,7 @@ import (
 
 var (
 	chat_s *server.Server
-	conf   *config.Sconfig
+	conf   *config.Config
 	gwg    sync.WaitGroup
 )
 
