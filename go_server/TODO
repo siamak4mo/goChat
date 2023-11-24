@@ -1,0 +1,3 @@
+[ ] log          -- a proper log module
+[ ] admin        -- admin http server
+[ ] config       -- read config from file
