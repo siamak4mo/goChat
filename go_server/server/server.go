@@ -96,8 +96,8 @@ func (s *Server) Serve() error {
 	log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
 
 	// add two chates for testing
-	s.Chats["echo"] = newChat("EcHo", "The Fundamental Chat!")
-	s.Chats["69"] = newChat("69", "69 chat!")
+	s.Chats["echo"] = newChat("EcHo", "Welcome to The Fundamental Chat!")
+	s.Chats["69"] = newChat("69", "Welcome -- 69 chat!")
 
 	go s.handle_clients()
 
@@ -157,10 +157,11 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_select_chat:
+			_lp := s.Clients[p.Conn.RemoteAddr().String()]
 			if !s.HasChat(p.Payload) {
 				p.Conn.Write([]byte("Chat doesn't exist\n"))
+				go s.listen_client(p.Conn, _lp.User) // handle messages
 			} else {
-				_lp := s.Clients[p.Conn.RemoteAddr().String()]
 				if len(_lp.User.ChatKey) != 0 {
 					delete(s.Chats[_lp.User.ChatKey].Members, _lp)
 					_lp.User.ChatKey = p.Payload
@@ -170,7 +171,6 @@ func (s *Server) handle_clients() {
 					s.Chats[p.Payload].Members[_lp] = true
 				}
 
-				p.Conn.Write([]byte("Welcome to " + p.Payload + "\n"))
 				p.Conn.Write([]byte(s.Chats[p.Payload].MOTD + "\n"))
 				go s.listen_client(p.Conn, _lp.User) // handle messages
 			}
