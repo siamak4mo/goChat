@@ -22,6 +22,7 @@ type Packet_t uint8
 
 const (
 	P_login Packet_t = iota + 1
+	P_select_chat
 	P_signup
 	P_logout
 	P_disconnected
@@ -32,6 +33,7 @@ const (
 type User_t struct {
 	Username  string
 	Signature string
+	Chat      string
 }
 type Packet struct {
 	Conn    net.Conn
@@ -44,19 +46,31 @@ type Server struct {
 	net.Listener
 	Pac     chan Packet
 	Clients map[string]*Packet
+	Chats   map[string](map[*Packet]bool)
 	Conf    config.Sconfig
 }
 
 func (u *User_t) String() string {
-	return "Username: " + u.Username + "\nSignature: " + u.Signature + "\n"
+	return ("Username: " + u.Username + "\nSignature: " +
+		u.Signature + "\nChat: " + u.Chat + "\n")
 }
 
 func New() *Server {
 	return &Server{
 		Conf:    *config.New(),
+		Chats:   make(map[string](map[*Packet]bool)),
+		Clients: make(map[string]*Packet),
 		Pac:     make(chan Packet),
-		Clients: map[string]*Packet{},
 	}
+}
+
+func (s *Server) HasChat(name string) bool {
+	for k := range s.Chats {
+		if strings.Compare(k, name) == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Server) Serve() error {
@@ -67,6 +81,10 @@ func (s *Server) Serve() error {
 
 	s.Listener = ln
 	log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
+
+	// add two chates for testing
+	s.Chats["EcHo"] = make(map[*Packet]bool)
+	s.Chats["69"] = make(map[*Packet]bool)
 
 	go s.handle_clients()
 
@@ -94,6 +112,9 @@ func (s *Server) handle_clients() {
 					log.Printf("ANONYMOUS DISCONNECTED")
 				} else {
 					log.Printf("%s disconnected\n", p.User.Username)
+					if len(p.User.Chat) != 0 {
+						delete(s.Chats[p.User.Chat], s.Clients[p.Payload])
+					}
 				}
 				delete(s.Clients, p.Payload)
 			}
@@ -112,7 +133,6 @@ func (s *Server) handle_clients() {
 					log.Printf("%s loged in\n", u.Username)
 					p.Conn.Write([]byte("Loged in\n"))
 
-					go s.listen_client(p.Conn, u) // handle messages
 				} else {
 					p.Conn.Write([]byte("Already Loged in\n"))
 				}
@@ -123,8 +143,22 @@ func (s *Server) handle_clients() {
 			}
 			break
 
+		case P_select_chat:
+			if !s.HasChat(p.Payload) {
+				p.Conn.Write([]byte("Chat doesn't exist\n"))
+			} else {
+				_lp := s.Clients[p.Conn.RemoteAddr().String()]
+				_lp.User.Chat = p.Payload
+
+				p.Conn.Write([]byte("Welcome to " + p.Payload + "\n"))
+				s.Chats[p.Payload][_lp] = true
+
+				go s.listen_client(p.Conn, _lp.User) // handle messages
+			}
+			break
+
 		case P_new_text_message:
-			for _, c := range s.Clients {
+			for c := range s.Chats[p.User.Chat] {
 				if strings.Compare(c.User.Username, p.User.Username) != 0 {
 					c.Conn.Write([]byte(p.User.Username))
 					c.Conn.Write([]byte("\n"))
@@ -189,7 +223,7 @@ func (s *Server) client_registry(conn net.Conn) {
 					Conn:    conn,
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
 				}
-				return
+				break
 
 			case 'S': // signup
 				s.Pac <- Packet{
@@ -198,6 +232,14 @@ func (s *Server) client_registry(conn net.Conn) {
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
 				}
 				break
+
+			case 'C': // select chat
+				s.Pac <- Packet{
+					Type_t:  P_select_chat,
+					Conn:    conn,
+					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
+				}
+				return
 			}
 		}
 	}
