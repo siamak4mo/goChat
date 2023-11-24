@@ -368,6 +368,13 @@ func (s *Server) listen_client(conn net.Conn, u User_t) {
 					Payload: conn.RemoteAddr().String(),
 					User:    u,
 				}
+
+			case 'C':
+				s.Pac <- Packet{
+					Type_t: P_list_chats,
+					Conn:   conn,
+				}
+				break
 			}
 		}
 	}
