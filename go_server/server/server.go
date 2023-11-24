@@ -52,7 +52,7 @@ type Server struct {
 	Pac     chan Packet
 	Clients map[string]*Packet
 	Chats   map[string]*Chat
-	Conf    config.Sconfig
+	Conf    *config.Sconfig
 }
 
 func (u *User_t) String() string {
@@ -62,7 +62,6 @@ func (u *User_t) String() string {
 
 func New() *Server {
 	return &Server{
-		Conf:    *config.New(),
 		Chats:   make(map[string]*Chat),
 		Clients: make(map[string]*Packet),
 		Pac:     make(chan Packet),
