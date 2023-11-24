@@ -1,6 +1,8 @@
 package server
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"net"
@@ -112,6 +114,11 @@ func newChat(name string, banner string) *Chat {
 	}
 }
 
+func (s *Server) NewChat(name string, banner string) {
+	key := hex.EncodeToString(sha1.New().Sum([]byte(name)))[0:16]
+	s.Chats[key] = newChat(name, banner)
+}
+
 func (s *Server) Serve() error {
 	ln, err := net.Listen("tcp", s.Conf.Server.Laddr)
 	if err != nil {
@@ -122,8 +129,8 @@ func (s *Server) Serve() error {
 	log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
 
 	// add two chates for testing
-	s.Chats["echo"] = newChat("EcHo", "Welcome to The Fundamental Chat!")
-	s.Chats["69"] = newChat("69", "Welcome -- 69 chat!")
+	s.NewChat("EcHo", "Welcome to The Fundamental Chat!")
+	s.NewChat("666", "Welcome --- 666 Chat!")
 
 	go s.handle_clients()
 
