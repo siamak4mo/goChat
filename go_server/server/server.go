@@ -34,7 +34,7 @@ const (
 type User_t struct {
 	Username  string
 	Signature string
-	Chat      string
+	ChatKey   string
 }
 type Packet struct {
 	Conn    net.Conn
@@ -42,24 +42,28 @@ type Packet struct {
 	User    User_t
 	Type_t  Packet_t
 }
-
+type Chat struct {
+	Members map[*Packet]bool
+	Name    string
+	MOTD    string
+}
 type Server struct {
 	net.Listener
 	Pac     chan Packet
 	Clients map[string]*Packet
-	Chats   map[string](map[*Packet]bool)
+	Chats   map[string]*Chat
 	Conf    config.Sconfig
 }
 
 func (u *User_t) String() string {
 	return fmt.Sprintf("Username: %s\nSignature: %s\nChat: %s\n",
-		u.Username, u.Signature, u.Chat)
+		u.Username, u.Signature, u.ChatKey)
 }
 
 func New() *Server {
 	return &Server{
 		Conf:    *config.New(),
-		Chats:   make(map[string](map[*Packet]bool)),
+		Chats:   make(map[string]*Chat),
 		Clients: make(map[string]*Packet),
 		Pac:     make(chan Packet),
 	}
@@ -74,6 +78,14 @@ func (s *Server) HasChat(name string) bool {
 	return false
 }
 
+func newChat(name string, banner string) *Chat {
+	return &Chat{
+		Name:    name,
+		MOTD:    banner,
+		Members: make(map[*Packet]bool),
+	}
+}
+
 func (s *Server) Serve() error {
 	ln, err := net.Listen("tcp", s.Conf.Server.Laddr)
 	if err != nil {
@@ -84,8 +96,8 @@ func (s *Server) Serve() error {
 	log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
 
 	// add two chates for testing
-	s.Chats["EcHo"] = make(map[*Packet]bool)
-	s.Chats["69"] = make(map[*Packet]bool)
+	s.Chats["echo"] = newChat("EcHo", "The Fundamental Chat!")
+	s.Chats["69"] = newChat("69", "69 chat!")
 
 	go s.handle_clients()
 
@@ -113,8 +125,8 @@ func (s *Server) handle_clients() {
 					log.Printf("ANONYMOUS DISCONNECTED")
 				} else {
 					log.Printf("%s disconnected\n", p.User.Username)
-					if len(p.User.Chat) != 0 {
-						delete(s.Chats[p.User.Chat], s.Clients[p.Payload])
+					if len(p.User.ChatKey) != 0 {
+						delete(s.Chats[p.User.ChatKey].Members, s.Clients[p.Payload])
 					}
 				}
 				delete(s.Clients, p.Payload)
@@ -149,18 +161,23 @@ func (s *Server) handle_clients() {
 				p.Conn.Write([]byte("Chat doesn't exist\n"))
 			} else {
 				_lp := s.Clients[p.Conn.RemoteAddr().String()]
-				delete(s.Chats[_lp.User.Chat], _lp)
-
-				_lp.User.Chat = p.Payload
-				s.Chats[p.Payload][_lp] = true
+				if len(_lp.User.ChatKey) != 0 {
+					delete(s.Chats[_lp.User.ChatKey].Members, _lp)
+					_lp.User.ChatKey = p.Payload
+					s.Chats[p.Payload].Members[_lp] = true
+				} else {
+					_lp.User.ChatKey = p.Payload
+					s.Chats[p.Payload].Members[_lp] = true
+				}
 
 				p.Conn.Write([]byte("Welcome to " + p.Payload + "\n"))
+				p.Conn.Write([]byte(s.Chats[p.Payload].MOTD + "\n"))
 				go s.listen_client(p.Conn, _lp.User) // handle messages
 			}
 			break
 
 		case P_new_text_message:
-			for c := range s.Chats[p.User.Chat] {
+			for c := range s.Chats[p.User.ChatKey].Members {
 				if strings.Compare(c.User.Username, p.User.Username) != 0 {
 					c.Conn.Write([]byte(p.User.Username))
 					c.Conn.Write([]byte("\n"))
