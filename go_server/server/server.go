@@ -29,6 +29,7 @@ const (
 	P_disconnected
 	P_new_text_message
 	P_whoami
+	P_list_chats
 )
 
 type User_t struct {
@@ -241,6 +242,12 @@ func (s *Server) handle_clients() {
 			go p.Swrite(fmt.Sprintf("%sChat: %s\nAddr: %s\n",
 				p.User.String(), s.ChatName(p), p.Payload), s)
 			break
+
+		case P_list_chats:
+			for k,v := range s.Chats {
+				go p.Swrite(fmt.Sprintf("ChatID: %-16s -- Name: %s\n", k, v.Name), s)
+			}
+			break
 		}
 	}
 }
@@ -284,6 +291,16 @@ func (s *Server) client_registry(conn net.Conn) {
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
 				}
 				return
+
+			}
+		} else if n > 0 {
+			switch buffer[0] {
+			case 'C':
+				s.Pac <- Packet{
+					Type_t: P_list_chats,
+					Conn: conn,
+				}
+				break
 			}
 		}
 	}
