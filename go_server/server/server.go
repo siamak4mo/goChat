@@ -94,11 +94,11 @@ func (p *Packet) RemoteAddr() string {
 func (p *Packet) Swrite(data string, s *Server) {
 	_, err := p.Conn.Write([]byte(data))
 
-	if err!=nil{
-		s.Pac <-Packet{
-			Type_t: P_disconnected,
-			Conn: p.Conn,
-			User: p.User,
+	if err != nil {
+		s.Pac <- Packet{
+			Type_t:  P_disconnected,
+			Conn:    p.Conn,
+			User:    p.User,
 			Payload: p.RemoteAddr(),
 		}
 	}
@@ -197,7 +197,7 @@ func (s *Server) handle_clients() {
 					s.Chats[p.Payload].Members[p_login] = true
 				}
 
-				go p.Swrite(s.Chats[p.Payload].MOTD + "\n", s)
+				go p.Swrite(s.Chats[p.Payload].MOTD+"\n", s)
 				go s.listen_client(p.Conn, p_login.User) // handle messages
 			}
 			break
@@ -205,14 +205,14 @@ func (s *Server) handle_clients() {
 		case P_new_text_message:
 			for c := range s.Chats[p.User.ChatKey].Members {
 				if strings.Compare(c.User.Username, p.User.Username) != 0 {
-					go c.Swrite(p.User.Username + "\n" + p.Payload, s)
+					go c.Swrite(p.User.Username+"\n"+p.Payload, s)
 				}
 			}
 			break
 
 		case P_signup:
 			if !username_isvalid(p.Payload) {
-				go func(){
+				go func() {
 					p.Swrite("Invalid username\n", s)
 					p.Conn.Close()
 				}()
@@ -222,7 +222,7 @@ func (s *Server) handle_clients() {
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
 
-					go p.Swrite("Token: " + tk.Token + "\n", s)
+					go p.Swrite("Token: "+tk.Token+"\n", s)
 					log.Printf("%s registered\n", p.Payload)
 				} else {
 					go p.Swrite("User Already exists\n", s)
@@ -244,7 +244,7 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_list_chats:
-			for k,v := range s.Chats {
+			for k, v := range s.Chats {
 				go p.Swrite(fmt.Sprintf("ChatID: %-16s -- Name: %s\n", k, v.Name), s)
 			}
 			break
@@ -291,14 +291,13 @@ func (s *Server) client_registry(conn net.Conn) {
 					Payload: string(buffer[PAYLOAD_PADD-1 : n-1]),
 				}
 				return
-
 			}
 		} else if n > 0 {
 			switch buffer[0] {
 			case 'C':
 				s.Pac <- Packet{
 					Type_t: P_list_chats,
-					Conn: conn,
+					Conn:   conn,
 				}
 				break
 			}
