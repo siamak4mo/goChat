@@ -4,9 +4,9 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"net"
 	"server/server/config"
+	"server/server/serlog"
 	"server/server/stoken"
 	"strings"
 	"unicode"
@@ -57,6 +57,7 @@ type Server struct {
 	Clients map[string]*Packet
 	Chats   map[string]*Chat
 	Conf    *config.Config
+	Log     *serlog.Log
 }
 
 func (u *User_t) String() string {
@@ -127,7 +128,8 @@ func (s *Server) Serve() error {
 	}
 
 	s.Listener = ln
-	log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
+	s.Log = serlog.New(*s.Conf)
+	s.Log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
 
 	for i, name := range s.Conf.Server.IChats {
 		s.NewChat(name, s.Conf.Server.IChatBanners[i])
@@ -138,7 +140,7 @@ func (s *Server) Serve() error {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Println("Could not accept a connection")
+			s.Log.Warnf("could not accept a connection\n")
 			continue
 		}
 
@@ -156,9 +158,9 @@ func (s *Server) handle_clients() {
 			if len(p.Payload) != 0 { // exp payload: string(IP:PORT)
 				if p.User == (User_t{}) {
 					// disconnected before authentication
-					log.Printf("ANONYMOUS DISCONNECTED")
+					s.Log.Debugf("ANONYMOUS DISCONNECTED")
 				} else {
-					log.Printf("%s disconnected\n", p.User.Username)
+					s.Log.Infof("%s disconnected\n", p.User.Username)
 					if len(p.User.ChatKey) != 0 {
 						delete(s.Chats[p.User.ChatKey].Members, s.Clients[p.Payload])
 					}
@@ -177,14 +179,14 @@ func (s *Server) handle_clients() {
 				p.User = u
 				if !s.username_exist(u.Username) {
 					s.Clients[p.RemoteAddr()] = &p
-					log.Printf("%s loged in\n", u.Username)
+					s.Log.Debugf("%s loged in\n", u.Username)
 					go p.Swrite("Loged in\n", s)
 
 				} else {
 					go p.Swrite("Already Loged in\n", s)
 				}
 			} else {
-				log.Printf("%s LOGIN FAILED\n", p.Payload)
+				s.Log.Infof("%s LOGIN FAILED\n", p.Payload)
 				go p.Swrite("Login Failed\n", s)
 				p.Conn.Close()
 			}
@@ -231,7 +233,7 @@ func (s *Server) handle_clients() {
 					tk.MkToken()
 
 					go p.Swrite("Token: "+tk.Token+"\n", s)
-					log.Printf("%s registered\n", p.Payload)
+					s.Log.Infof("%s registered\n", p.Payload)
 				} else {
 					go p.Swrite("User Already exists\n", s)
 				}
@@ -241,7 +243,7 @@ func (s *Server) handle_clients() {
 		case P_logout:
 			delete(s.Clients, p.Payload) // exp payload: string(IP:PORT)
 			go p.Swrite("Loged out\n", s)
-			log.Printf("%s loged out", p.User.Username)
+			s.Log.Debugf("%s loged out", p.User.Username)
 
 			go s.client_registry(p.Conn)
 			break
