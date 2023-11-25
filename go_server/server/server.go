@@ -48,6 +48,7 @@ type Packet struct {
 }
 type Chat struct {
 	Members map[*Packet]bool // set of login packets
+	ChatKey string
 	Name    string
 	MOTD    string // message of the day
 }
@@ -110,6 +111,7 @@ func (p *Packet) Swrite(data string, s *Server) {
 
 func newChat(name string, banner string) *Chat {
 	return &Chat{
+		ChatKey: hex.EncodeToString(sha1.New().Sum([]byte(name)))[0:CHATID_LEN],
 		Name:    name,
 		MOTD:    banner,
 		Members: make(map[*Packet]bool),
@@ -117,8 +119,8 @@ func newChat(name string, banner string) *Chat {
 }
 
 func (s *Server) NewChat(name string, banner string) {
-	key := hex.EncodeToString(sha1.New().Sum([]byte(name)))[0:CHATID_LEN]
-	s.Chats[key] = newChat(name, banner)
+	c := newChat(name, banner)
+	s.Chats[c.ChatKey] = c
 }
 
 func (s *Server) Serve() error {
