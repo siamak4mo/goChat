@@ -84,7 +84,7 @@ func (s *Server) HasChatKey(key string) bool {
 }
 
 func (s *Server) HasChat(name string) bool {
-	for _,c := range s.Chats {
+	for _, c := range s.Chats {
 		if strings.Compare(c.Name, name) == 0 {
 			return true
 		}
@@ -129,10 +129,12 @@ func newChat(name string, banner string) *Chat {
 
 func (s *Server) AddNewChat(name string, banner string) {
 	c := newChat(name, banner)
+	s.Log.Infof("chat %s added\n", c.ChatKey)
 	s.Chats[c.ChatKey] = c
 }
 
 func (s *Server) RemoveChat(key string) {
+	s.Log.Infof("chat %s removed\n", key)
 	for lp := range s.Chats[key].Members {
 		lp.Swrite("this chat no longer exists, login to another chat\n", s)
 		lp.User.ChatKey = ""
