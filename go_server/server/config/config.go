@@ -1,6 +1,15 @@
 package config
 
+import (
+	"encoding/json"
+	"errors"
+	"os"
+	"strings"
+)
+
 const (
+	CONF_PATHS = "gochat_server.json:../gochat_server.json:/etc/gochat_server.json"
+
 	LADDR = "127.0.0.1"
 	LPORT = "8080"
 
@@ -12,24 +21,47 @@ const (
 
 type Config struct {
 	Token struct {
-		Delim   string
-		SecVal  string
-		Bearer  string
-		HashAlg string
+		Delim   string `json:"token_delim"`
+		SecVal  string `json:"token_private_key"`
+		Bearer  string `json:"token_bearer"`
+		HashAlg string `json:"token_hash_algorithm"`
 	}
 	Server struct {
-		Addr     string
-		Chats    []string
-		ChatMOTD []string
+		Addr     string   `json:"listen_addr"`
+		Chats    []string `json:"room_names"`
+		ChatMOTD []string `json:"room_motds"`
 	}
 	Log struct {
-		LogLevel uint
+		LogLevel uint `json:"log_level"`
 	}
 }
 
+func get_conf_file() (*os.File, error) {
+	for _, path := range strings.Split(CONF_PATHS, ":") {
+		f, err := os.Open(path)
+
+		if err == nil {
+			return f, nil
+		} else if os.IsExist(err) {
+			return nil, err
+		}
+	}
+	return nil, errors.New("Config not found")
+}
+
 func New() *Config {
-	// TODO: read config from file
-	return Default()
+	cfg := Default()
+	
+	
+	if f, err := get_conf_file(); err == nil {
+		jp := json.NewDecoder(f)
+		if err = jp.Decode(cfg); err != nil {
+			return Default()
+		}
+		return cfg
+	} else {
+		return cfg
+	}
 }
 
 func Default() *Config {
