@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"server/server"
 	"server/server/config"
 	"sync"
@@ -14,22 +13,18 @@ var (
 )
 
 func start_chat_server(wg *sync.WaitGroup) {
-	log.Println("INITIALIZING the server")
-
 	chat_s = server.New()
 	chat_s.Conf = conf
 
 	err := chat_s.Serve()
 
 	if err != nil {
-		log.Fatalf("Could not listen -- addr: %s\n", conf.Server.Laddr)
 		wg.Done()
 	}
 }
 
 
 func start_admin_server(wg *sync.WaitGroup) {
-	log.Printf("admin page -- Not Implemented Yet.")
 	wg.Done()
 }
 
