@@ -269,7 +269,7 @@ func (s *Server) handle_clients() {
 				delete(s.Chats[_u.ChatKey].Members, s.Clients[p.Payload])
 			}
 			delete(s.Clients, p.Payload) // exp payload: string(IP:PORT)
-			
+
 			go s.client_registry(p.Conn)
 			break
 
