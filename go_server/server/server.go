@@ -205,6 +205,11 @@ func (s *Server) handle_clients() {
 
 		case P_select_chat:
 			p_login := s.Clients[p.RemoteAddr()]
+			if p_login == nil {
+				p.Swrite("you are not loged in\n", s)
+				go s.client_registry(p.Conn)
+				break
+			}
 			if !s.HasChat(p.Payload) {
 				p.Swrite("Chat doesn't exist\n", s)
 				go s.listen_client(p.Conn, p_login.User) // handle messages
