@@ -74,9 +74,18 @@ func New() *Server {
 	}
 }
 
-func (s *Server) HasChat(name string) bool {
+func (s *Server) HasChatKey(key string) bool {
 	for k := range s.Chats {
-		if strings.Compare(k, name) == 0 {
+		if strings.Compare(k, key) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Server) HasChat(name string) bool {
+	for _,c := range s.Chats {
+		if strings.Compare(c.Name, name) == 0 {
 			return true
 		}
 	}
@@ -210,7 +219,7 @@ func (s *Server) handle_clients() {
 				go s.client_registry(p.Conn)
 				break
 			}
-			if !s.HasChat(p.Payload) {
+			if !s.HasChatKey(p.Payload) {
 				p.Swrite("Chat doesn't exist\n", s)
 				go s.listen_client(p.Conn, p_login.User) // handle messages
 			} else {
