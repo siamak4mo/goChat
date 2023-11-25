@@ -33,7 +33,7 @@ func level2str(level Lev) string {
 	case Error:
 		return "ERROR -- "
 	case Panic:
-		return "*PANIC* -- "
+		return " ** PANIC **  "
 	}
 	return ""
 }
@@ -50,7 +50,7 @@ func (l Log) logf(level Lev, fun func(), format string, args ...any) {
 
 	if level >= Lev(l.LogLevel) {
 		l.Time = time.Now()
-		fmt.Printf("%v . %s", l.Time.Unix(),level2str(level))
+		fmt.Printf("%v %s", l.Time.Unix(),level2str(level))
 		fmt.Printf(format, args...)
 	}
 }
