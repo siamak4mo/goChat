@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"server/server/config"
+	"time"
 )
 
 type Lev uint
@@ -17,6 +18,7 @@ const (
 )
 
 type Log struct {
+	Time     time.Time
 	LogLevel uint
 }
 
@@ -39,45 +41,47 @@ func level2str(level Lev) string {
 func New(cfg config.Config) *Log {
 	return &Log{
 		LogLevel: cfg.Log.LogLevel,
+		Time: time.Now(),
 	}
 }
 
-func (l Log) logf(level Lev, def func(), format string, args ...any) {
-	defer def()
+func (l Log) logf(level Lev, fun func(), format string, args ...any) {
+	defer fun()
 
 	if level >= Lev(l.LogLevel) {
-		fmt.Print(level2str(level))
+		l.Time = time.Now()
+		fmt.Printf("%v . %s", l.Time.Unix(),level2str(level))
 		fmt.Printf(format, args...)
 	}
 }
 
-func nop() {}
-func exit() {
+func Nop() {}
+func ExitErr() {
 	os.Exit(1)
 }
 
 func (l Log) Debugf(format string, args ...any) {
-	l.logf(Debug, nop, format, args...)
+	l.logf(Debug, Nop, format, args...)
 }
 func (l Log) Infof(format string, args ...any) {
-	l.logf(Info, nop, format, args...)
+	l.logf(Info, Nop, format, args...)
 }
 func (l Log) Warnf(format string, args ...any) {
-	l.logf(Warning, nop, format, args...)
+	l.logf(Warning, Nop, format, args...)
 }
 
 func (l Log) Errorf(format string, fun func(), args ...any) {
 	if fun != nil {
 		l.logf(Error, fun, format, args...)
 	} else {
-		l.logf(Error, exit, format, args...)
+		l.logf(Error, ExitErr, format, args...)
 	}
 }
 func (l Log) Panicf(format string, fun func(), args ...any) {
 	if fun != nil {
 		l.logf(Panic, fun, format, args...)
 	} else {
-		l.logf(Panic, exit, format, args...)
+		l.logf(Panic, ExitErr, format, args...)
 	}
 }
 
