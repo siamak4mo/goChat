@@ -189,14 +189,14 @@ func (s *Server) handle_clients() {
 				if !s.username_exist(u.Username) {
 					s.Clients[p.RemoteAddr()] = &p
 					s.Log.Debugf("%s loged in\n", u.Username)
-					go p.Swrite("Loged in\n", s)
+					p.Swrite("Loged in\n", s)
 
 				} else {
-					go p.Swrite("Already Loged in\n", s)
+					p.Swrite("Already Loged in\n", s)
 				}
 			} else {
 				s.Log.Infof("LOGIN FAILED\n")
-				go p.Swrite("Login Failed\n", s)
+				p.Swrite("Login Failed\n", s)
 				p.Conn.Close()
 			}
 			break
@@ -204,7 +204,7 @@ func (s *Server) handle_clients() {
 		case P_select_chat:
 			p_login := s.Clients[p.RemoteAddr()]
 			if !s.HasChat(p.Payload) {
-				go p.Swrite("Chat doesn't exist\n", s)
+				p.Swrite("Chat doesn't exist\n", s)
 				go s.listen_client(p.Conn, p_login.User) // handle messages
 			} else {
 				if len(p_login.User.ChatKey) != 0 {
@@ -216,7 +216,7 @@ func (s *Server) handle_clients() {
 					s.Chats[p.Payload].Members[p_login] = true
 				}
 
-				go p.Swrite(s.Chats[p.Payload].MOTD+"\n", s)
+				p.Swrite(s.Chats[p.Payload].MOTD+"\n", s)
 				go s.listen_client(p.Conn, p_login.User) // handle messages
 			}
 			break
@@ -241,10 +241,10 @@ func (s *Server) handle_clients() {
 					tk.Username = []byte(p.Payload)
 					tk.MkToken()
 
-					go p.Swrite("Token: "+tk.Token+"\n", s)
+					p.Swrite("Token: "+tk.Token+"\n", s)
 					s.Log.Infof("%s registered\n", p.Payload)
 				} else {
-					go p.Swrite("User Already exists\n", s)
+					p.Swrite("User Already exists\n", s)
 				}
 			}
 			break
@@ -254,14 +254,14 @@ func (s *Server) handle_clients() {
 			if p.User != (User_t{}) {
 				_u = p.User
 				s.Log.Debugf("%s loged out\n", _u.Username)
-				go p.Swrite("Loged out\n", s)
+				p.Swrite("Loged out\n", s)
 			} else {
 				if s.Clients[p.Payload] != nil {
 					_u = s.Clients[p.Payload].User
 					s.Log.Debugf("%s loged out\n", _u.Username)
-					go p.Swrite("Loged out\n", s)
+					p.Swrite("Loged out\n", s)
 				} else {
-					go p.Swrite("you are not loged in\n", s)
+					p.Swrite("you are not loged in\n", s)
 				}
 			}
 
@@ -281,23 +281,23 @@ func (s *Server) handle_clients() {
 				if s.Clients[p.Payload] != nil {
 					_u = s.Clients[p.Payload].User
 				} else {
-					go p.Swrite("Anonymous\n", s)
+					p.Swrite("Anonymous\n", s)
 					break
 				}
 			}
 
 			if len(_u.ChatKey) != 0 {
-				go p.Swrite(fmt.Sprintf("%sChat: %s\nAddr: %s\n",
+				p.Swrite(fmt.Sprintf("%sChat: %s\nAddr: %s\n",
 					_u.String(), s.ChatName(p), p.Payload), s)
 			} else {
-				go p.Swrite(fmt.Sprintf("%sAddr: %s\n",
+				p.Swrite(fmt.Sprintf("%sAddr: %s\n",
 					_u.String(), p.Payload), s)
 			}
 			break
 
 		case P_list_chats:
 			for k, v := range s.Chats {
-				go p.Swrite(fmt.Sprintf("ChatID: %s -- Name: %s\n", k, v.Name), s)
+				p.Swrite(fmt.Sprintf("ChatID: %s -- Name: %s\n", k, v.Name), s)
 			}
 			break
 		}
