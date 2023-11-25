@@ -25,9 +25,13 @@ func start_chat_server(wg *sync.WaitGroup) {
 
 
 func start_admin_server(wg *sync.WaitGroup) {
-	wg.Done()
-}
+	admin_s = NewAdminServer(chat_s)
+	err := admin_s.Server()
 
+	if err != nil {
+		wg.Done()
+	}
+}
 
 func main() {
 	conf = config.New()
