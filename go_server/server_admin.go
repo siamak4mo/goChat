@@ -116,7 +116,27 @@ func config_lookup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func chat_stat(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(r.Method))
+	if r.Method == http.MethodGet {
+		w.Header().Set("Content-Type", "application/json")
+		res := make(map[string]interface{})
+
+		for k, chat := range chat_s.Chats {
+			res[k] = struct {
+				Name  string `json:"name"`
+				MOTD  string `json:"banner"`
+				MEM_C int    `json:"member count"`
+			}{
+				Name:  chat.Name,
+				MOTD:  chat.MOTD,
+				MEM_C: len(chat.Members),
+			}
+		}
+		resp, err := json.Marshal(res)
+		if err != nil {
+			println(err.Error())
+		}
+		w.Write(resp)
+	}
 }
 func chat_add(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(r.Method))
