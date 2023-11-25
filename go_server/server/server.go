@@ -41,9 +41,9 @@ type User_t struct {
 	ChatKey   string
 }
 type Packet struct {
+	User    *User_t
 	Conn    net.Conn
 	Payload string
-	User    User_t
 	Type_t  Packet_t
 }
 type Chat struct {
@@ -132,6 +132,14 @@ func (s *Server) AddNewChat(name string, banner string) {
 	s.Chats[c.ChatKey] = c
 }
 
+func (s *Server) RemoveChat(key string) {
+	for lp := range s.Chats[key].Members {
+		lp.Swrite("this chat no longer exists, login to another chat\n", s)
+		lp.User.ChatKey = ""
+	}
+	delete(s.Chats, key)
+}
+
 func (s *Server) Serve() error {
 	s.Log = serlog.New(*s.Conf)
 	ln, err := net.Listen("tcp", s.Conf.Server.Addr)
@@ -170,8 +178,8 @@ func (s *Server) handle_clients() {
 		switch p.Type_t {
 		case P_disconnected:
 			if len(p.Payload) != 0 { // exp payload: string(IP:PORT)
-				_u := User_t{}
-				if p.User != (User_t{}) {
+				_u := &User_t{}
+				if *p.User != (User_t{}) {
 					_u = p.User
 					delete(s.Clients, p.Payload)
 					s.Log.Debugf("%s disconnected\n", _u.Username)
@@ -192,7 +200,7 @@ func (s *Server) handle_clients() {
 		case P_login:
 			tk := stoken.New_s(p.Payload, s.Conf) // exp payload: token  b64(username).signature
 			if tk.Validate() {
-				u := User_t{
+				u := &User_t{
 					Username:  string(tk.Username),
 					Signature: tk.Signature,
 				}
@@ -238,6 +246,9 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_new_text_message:
+			if len(p.User.ChatKey) == 0 {
+				break
+			}
 			for c := range s.Chats[p.User.ChatKey].Members {
 				if strings.Compare(c.User.Username, p.User.Username) != 0 {
 					go c.Swrite(p.User.Username+"\n"+p.Payload, s)
@@ -266,8 +277,8 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_logout:
-			_u := User_t{}
-			if p.User != (User_t{}) {
+			_u := &User_t{}
+			if *p.User != (User_t{}) {
 				_u = p.User
 				s.Log.Debugf("%s loged out\n", _u.Username)
 				p.Swrite("Loged out\n", s)
@@ -290,8 +301,8 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_whoami: // exp payload: string(IP:PORT)
-			_u := User_t{}
-			if p.User != (User_t{}) {
+			_u := &User_t{}
+			if *p.User != (User_t{}) {
 				_u = p.User
 			} else {
 				if s.Clients[p.Payload] != nil {
@@ -388,7 +399,7 @@ func (s *Server) client_registry(conn net.Conn) {
 	}
 }
 
-func (s *Server) listen_client(conn net.Conn, u User_t) {
+func (s *Server) listen_client(conn net.Conn, u *User_t) {
 	buffer := make([]byte, B_BUFF_S)
 	for {
 		n, err := conn.Read(buffer)
