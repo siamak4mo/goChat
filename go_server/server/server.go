@@ -118,7 +118,7 @@ func newChat(name string, banner string) *Chat {
 	}
 }
 
-func (s *Server) NewChat(name string, banner string) {
+func (s *Server) AddNewChat(name string, banner string) {
 	c := newChat(name, banner)
 	s.Chats[c.ChatKey] = c
 }
@@ -137,7 +137,7 @@ func (s *Server) Serve() error {
 	s.Log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
 
 	for i, name := range s.Conf.Server.IChats {
-		s.NewChat(name, s.Conf.Server.IChatBanners[i])
+		s.AddNewChat(name, s.Conf.Server.IChatBanners[i])
 	}
 
 	go s.handle_clients()
