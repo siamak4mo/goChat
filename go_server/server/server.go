@@ -273,9 +273,26 @@ func (s *Server) handle_clients() {
 			go s.client_registry(p.Conn)
 			break
 
-		case P_whoami:
-			go p.Swrite(fmt.Sprintf("%sChat: %s\nAddr: %s\n",
-				p.User.String(), s.ChatName(p), p.Payload), s)
+		case P_whoami: // exp payload: string(IP:PORT)
+			_u := User_t{}
+			if p.User != (User_t{}) {
+				_u = p.User
+			} else {
+				if s.Clients[p.Payload] != nil {
+					_u = s.Clients[p.Payload].User
+				} else {
+					go p.Swrite("Anonymous\n", s)
+					break
+				}
+			}
+
+			if len(_u.ChatKey) != 0 {
+				go p.Swrite(fmt.Sprintf("%sChat: %s\nAddr: %s\n",
+					_u.String(), s.ChatName(p), p.Payload), s)
+			} else {
+				go p.Swrite(fmt.Sprintf("%sAddr: %s\n",
+					_u.String(), p.Payload), s)
+			}
 			break
 
 		case P_list_chats:
@@ -329,7 +346,7 @@ func (s *Server) client_registry(conn net.Conn) {
 			}
 		} else if n > 0 {
 			switch buffer[0] {
-			case 'C':
+			case 'C': // list chats
 				s.Pac <- Packet{
 					Type_t: P_list_chats,
 					Conn:   conn,
@@ -344,6 +361,12 @@ func (s *Server) client_registry(conn net.Conn) {
 				}
 				break
 
+			case 'W': // whoami
+				s.Pac <- Packet{
+					Type_t:  P_whoami,
+					Conn:    conn,
+					Payload: conn.RemoteAddr().String(),
+				}
 			}
 		}
 	}
