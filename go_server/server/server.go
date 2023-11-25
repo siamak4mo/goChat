@@ -159,16 +159,22 @@ func (s *Server) handle_clients() {
 		switch p.Type_t {
 		case P_disconnected:
 			if len(p.Payload) != 0 { // exp payload: string(IP:PORT)
-				if p.User == (User_t{}) {
-					// disconnected before authentication
-					s.Log.Debugf("ANONYMOUS DISCONNECTED\n")
+				_u := User_t{}
+				if p.User != (User_t{}) {
+					_u = p.User
+					delete(s.Clients, p.Payload)
+					s.Log.Infof("%s disconnected\n", _u.Username)
+				} else if s.Clients[p.Payload] != nil {
+					_u = s.Clients[p.Payload].User
+					delete(s.Clients, p.Payload)
+					s.Log.Infof("%s disconnected\n", _u.Username)
 				} else {
-					s.Log.Infof("%s disconnected\n", p.User.Username)
-					if len(p.User.ChatKey) != 0 {
-						delete(s.Chats[p.User.ChatKey].Members, s.Clients[p.Payload])
-					}
+					s.Log.Debugf("ANONYMOUS DISCONNECTED\n")
 				}
-				delete(s.Clients, p.Payload)
+
+				if len(_u.ChatKey) != 0 {
+					delete(s.Chats[_u.ChatKey].Members, s.Clients[p.Payload])
+				}
 			}
 			break
 
@@ -244,10 +250,26 @@ func (s *Server) handle_clients() {
 			break
 
 		case P_logout:
-			delete(s.Clients, p.Payload) // exp payload: string(IP:PORT)
-			go p.Swrite("Loged out\n", s)
-			s.Log.Debugf("%s loged out\n", p.User.Username)
+			_u := User_t{}
+			if p.User != (User_t{}) {
+				_u = p.User
+				s.Log.Debugf("%s loged out\n", _u.Username)
+				go p.Swrite("Loged out\n", s)
+			} else {
+				if s.Clients[p.Payload] != nil {
+					_u = s.Clients[p.Payload].User
+					s.Log.Debugf("%s loged out\n", _u.Username)
+					go p.Swrite("Loged out\n", s)
+				} else {
+					go p.Swrite("you are not loged in\n", s)
+				}
+			}
 
+			if len(_u.ChatKey) != 0 {
+				delete(s.Chats[_u.ChatKey].Members, s.Clients[p.Payload])
+			}
+			delete(s.Clients, p.Payload) // exp payload: string(IP:PORT)
+			
 			go s.client_registry(p.Conn)
 			break
 
@@ -313,6 +335,15 @@ func (s *Server) client_registry(conn net.Conn) {
 					Conn:   conn,
 				}
 				break
+
+			case 'L': // to log out
+				s.Pac <- Packet{
+					Type_t:  P_logout,
+					Conn:    conn,
+					Payload: conn.RemoteAddr().String(),
+				}
+				break
+
 			}
 		}
 	}
