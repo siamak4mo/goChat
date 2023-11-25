@@ -45,6 +45,10 @@ func NewAdminServer(server *server.Server) *AdminServer {
 		HandlerFunc: chat_stat,
 		Info:        "statistics of chats",
 	}
+	h["/chat/users"] = AdminHandler{
+		HandlerFunc: chat_users,
+		Info:        "show users of a chat room",
+	}
 	h["/chat/add"] = AdminHandler{
 		HandlerFunc: chat_add,
 		Info:        "make a new chat room",
@@ -129,6 +133,26 @@ func chat_stat(w http.ResponseWriter, r *http.Request) {
 				Name:  chat.Name,
 				MOTD:  chat.MOTD,
 				MEM_C: len(chat.Members),
+			}
+		}
+		resp, err := json.Marshal(res)
+		if err != nil {
+			println(err.Error())
+		}
+		w.Write(resp)
+	}
+}
+func chat_users(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.Header().Set("Content-Type", "application/json")
+		res := make(map[int]string)
+		chat := r.URL.Query().Get("chat")
+
+		if len(chat) != 0 {
+			idx := 0
+			for lp := range chat_s.Chats[chat].Members {
+				res[idx] = lp.User.Username
+				idx += 1
 			}
 		}
 		resp, err := json.Marshal(res)
