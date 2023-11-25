@@ -1,0 +1,22 @@
+{
+    "Server": {
+        "listen_addr": "127.0.0.1:7070",
+        "room_names": [
+            "EcHo",
+            "HCK"
+        ],
+        "room_motds": [
+            "Welcome to the `Echo` chat!",
+            "Welcome to the Hack chat  :D"
+        ]
+    },
+    "Token": {
+        "token_delim": ".",
+        "token_private_key": "mY s3kret k3Y",
+        "token_bearer": "Bearer",
+        "token_hash_algorithm": "sha1"
+    },
+    "Log":{
+        "log_level": 2
+    }
+}
