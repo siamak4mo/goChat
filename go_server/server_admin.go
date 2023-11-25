@@ -148,7 +148,7 @@ func chat_users(w http.ResponseWriter, r *http.Request) {
 		res := make(map[int]string)
 		chat := r.URL.Query().Get("chat")
 
-		if len(chat) != 0 {
+		if len(chat) == 16 && chat_s.Chats[chat] != nil {
 			idx := 0
 			for lp := range chat_s.Chats[chat].Members {
 				res[idx] = lp.User.Username
