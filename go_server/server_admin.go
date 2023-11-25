@@ -53,6 +53,14 @@ func NewAdminServer(server *server.Server) *AdminServer {
 		HandlerFunc: chat_remove,
 		Info:        "remove a chat room",
 	}
+	h["/users/stat"] = AdminHandler{
+		HandlerFunc: user_stat,
+		Info:        "show loged in users",
+	}
+	h["/config/lookup"] = AdminHandler{
+		HandlerFunc: config_lookup,
+		Info:        "show the current server configuration",
+	}
 
 	admin_s = &AdminServer{
 		Handlers:     h,
@@ -66,6 +74,41 @@ func root(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		w.Header().Set("Content-Type", "application/json")
 		resp, err := json.Marshal(admin_s)
+		if err != nil {
+			println(err.Error())
+		}
+		w.Write(resp)
+	}
+}
+func user_stat(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.Header().Set("Content-Type", "application/json")
+		res := make(map[string]interface{})
+
+		for addr, lp := range chat_s.Clients {
+			res[lp.User.Username] = struct {
+				Addr     string `json:"address"`
+				Token    string `json:"token"`
+				ChatKey  string `json:"chat key"`
+				ChatName string `json:"chat name"`
+			}{
+				Addr:     addr,
+				Token:    lp.Payload,
+				ChatKey:  lp.User.ChatKey,
+				ChatName: chat_s.ChatName(*lp),
+			}
+		}
+		resp, err := json.Marshal(res)
+		if err != nil {
+			println(err.Error())
+		}
+		w.Write(resp)
+	}
+}
+func config_lookup(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.Header().Set("Content-Type", "application/json")
+		resp, err := json.Marshal(chat_s.Conf)
 		if err != nil {
 			println(err.Error())
 		}
