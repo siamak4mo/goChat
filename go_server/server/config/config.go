@@ -12,15 +12,15 @@ const (
 
 type Config struct {
 	Token struct {
-		TokenDelim string
-		SecVal     string
-		Bearer     string
-		HashAlg    string
+		Delim   string
+		SecVal  string
+		Bearer  string
+		HashAlg string
 	}
 	Server struct {
-		Laddr        string
-		IChats       []string
-		IChatBanners []string
+		Addr     string
+		Chats    []string
+		ChatMOTD []string
 	}
 	Log struct {
 		LogLevel uint
@@ -35,23 +35,23 @@ func New() *Config {
 func Default() *Config {
 	cfg := Config{}
 
-	cfg.Server.Laddr = LADDR + ":" + LPORT
+	cfg.Server.Addr = LADDR + ":" + LPORT
 
 	cfg.Token.Bearer = BEARER
-	cfg.Token.TokenDelim = TOKEN_DELIM
+	cfg.Token.Delim = TOKEN_DELIM
 	cfg.Token.SecVal = SECVAL
 	cfg.Token.HashAlg = HASH_ALG
 
-	cfg.Server.IChats = []string{
+	cfg.Server.Chats = []string{
 		"EcHo",
 		"HCK",
 	}
-	cfg.Server.IChatBanners = []string{
+	cfg.Server.ChatMOTD = []string{
 		"Welcome to the `echo` chat!",
 		"Welcome to the `Hack` chat :D",
 	}
 
-	cfg.Log.LogLevel = 0  // debug log level
+	cfg.Log.LogLevel = 0 // debug log level
 
 	return &cfg
 }

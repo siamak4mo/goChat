@@ -64,7 +64,7 @@ func GetHasher(hash_name string) hash.Hash {
 }
 
 func (t *Token_t) parse() error {
-	token_parts := strings.Split(t.Token, t.Conf.Token.TokenDelim)
+	token_parts := strings.Split(t.Token, t.Conf.Token.Delim)
 	if len(token_parts) != 2 {
 		return errors.New("invalid token")
 	}
@@ -87,7 +87,7 @@ func (t *Token_t) MkToken() {
 	signature := hex.EncodeToString(t.hasher.Sum(nil))
 	t.hasher.Reset()
 
-	t.Token = fmt.Sprintf("%s%s%s", username_b64, t.Conf.Token.TokenDelim, signature)
+	t.Token = fmt.Sprintf("%s%s%s", username_b64, t.Conf.Token.Delim, signature)
 }
 
 func (t *Token_t) Validate() bool {

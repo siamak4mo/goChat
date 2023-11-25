@@ -125,19 +125,19 @@ func (s *Server) AddNewChat(name string, banner string) {
 
 func (s *Server) Serve() error {
 	s.Log = serlog.New(*s.Conf)
-	ln, err := net.Listen("tcp", s.Conf.Server.Laddr)
+	ln, err := net.Listen("tcp", s.Conf.Server.Addr)
 
 	if err != nil {
 		s.Log.Panicf("Could not listen on %v\n",
-			serlog.Nop, s.Conf.Server.Laddr)
+			serlog.Nop, s.Conf.Server.Addr)
 		return err
 	}
 
 	s.Listener = ln
-	s.Log.Printf("Listening on %s\n", s.Conf.Server.Laddr)
+	s.Log.Printf("Listening on %s\n", s.Conf.Server.Addr)
 
-	for i, name := range s.Conf.Server.IChats {
-		s.AddNewChat(name, s.Conf.Server.IChatBanners[i])
+	for i, name := range s.Conf.Server.Chats {
+		s.AddNewChat(name, s.Conf.Server.ChatMOTD[i])
 	}
 
 	go s.handle_clients()
