@@ -163,7 +163,21 @@ func chat_users(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func chat_add(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(r.Method))
+	if r.Method == http.MethodPost {
+		dec := json.NewDecoder(r.Body)
+		data := struct {
+			Name string `json:"name"`
+			MOTD string `json:"banner"`
+		}{}
+		err := dec.Decode(&data)
+
+		if err == nil {
+			if !chat_s.HasChat(data.Name) {
+				chat_s.AddNewChat(data.Name, data.MOTD)
+				w.Write([]byte("Added\n"))
+			}
+		}
+	}
 }
 func chat_remove(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(r.Method))
