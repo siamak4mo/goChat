@@ -158,7 +158,7 @@ func (s *Server) handle_clients() {
 			if len(p.Payload) != 0 { // exp payload: string(IP:PORT)
 				if p.User == (User_t{}) {
 					// disconnected before authentication
-					s.Log.Debugf("ANONYMOUS DISCONNECTED")
+					s.Log.Debugf("ANONYMOUS DISCONNECTED\n")
 				} else {
 					s.Log.Infof("%s disconnected\n", p.User.Username)
 					if len(p.User.ChatKey) != 0 {
@@ -186,7 +186,7 @@ func (s *Server) handle_clients() {
 					go p.Swrite("Already Loged in\n", s)
 				}
 			} else {
-				s.Log.Infof("%s LOGIN FAILED\n", p.Payload)
+				s.Log.Infof("LOGIN FAILED\n")
 				go p.Swrite("Login Failed\n", s)
 				p.Conn.Close()
 			}
@@ -243,7 +243,7 @@ func (s *Server) handle_clients() {
 		case P_logout:
 			delete(s.Clients, p.Payload) // exp payload: string(IP:PORT)
 			go p.Swrite("Loged out\n", s)
-			s.Log.Debugf("%s loged out", p.User.Username)
+			s.Log.Debugf("%s loged out\n", p.User.Username)
 
 			go s.client_registry(p.Conn)
 			break
