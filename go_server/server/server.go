@@ -165,11 +165,11 @@ func (s *Server) handle_clients() {
 				if p.User != (User_t{}) {
 					_u = p.User
 					delete(s.Clients, p.Payload)
-					s.Log.Infof("%s disconnected\n", _u.Username)
+					s.Log.Debugf("%s disconnected\n", _u.Username)
 				} else if s.Clients[p.Payload] != nil {
 					_u = s.Clients[p.Payload].User
 					delete(s.Clients, p.Payload)
-					s.Log.Infof("%s disconnected\n", _u.Username)
+					s.Log.Debugf("%s disconnected\n", _u.Username)
 				} else {
 					s.Log.Debugf("ANONYMOUS DISCONNECTED\n")
 				}
