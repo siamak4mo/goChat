@@ -47,15 +47,15 @@ type Packet struct {
 	Type_t  Packet_t
 }
 type Chat struct {
-	Members map[*Packet]bool
+	Members map[*Packet]bool // set of login packets
 	Name    string
-	MOTD    string
+	MOTD    string // message of the day
 }
 type Server struct {
 	net.Listener
 	Pac     chan Packet
-	Clients map[string]*Packet
-	Chats   map[string]*Chat
+	Clients map[string]*Packet // map from "ip:port" to login packet
+	Chats   map[string]*Chat   // map from ChatKey to Chat
 	Conf    *config.Config
 	Log     *serlog.Log
 }
