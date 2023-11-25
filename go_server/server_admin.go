@@ -180,5 +180,18 @@ func chat_add(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func chat_remove(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(r.Method))
+	if r.Method == http.MethodPost {
+		dec := json.NewDecoder(r.Body)
+		data := struct {
+			Key string `json:"chat key"`
+		}{}
+		err := dec.Decode(&data)
+
+		if err == nil {
+			if chat_s.HasChatKey(data.Key) {
+				chat_s.RemoveChat(data.Key)
+				w.Write([]byte("Removed\n"))
+			}
+		}
+	}
 }
