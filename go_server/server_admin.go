@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io"
+	"encoding/json"
 	"net/http"
 	"server/server"
 )
@@ -11,13 +11,13 @@ var (
 )
 
 type AdminHandler struct {
-	http.HandlerFunc
-	Info string
+	http.HandlerFunc `json:"-"`
+	Info             string `json:"Info"`
 }
 
 type AdminServer struct {
-	Handlers     map[string]AdminHandler
-	GoChatServer *server.Server
+	Handlers     map[string]AdminHandler `json:"Routes"`
+	GoChatServer *server.Server          `json:"-"`
 }
 
 func (s *AdminServer) Server() error {
@@ -64,9 +64,12 @@ func NewAdminServer(server *server.Server) *AdminServer {
 
 func root(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		for k, v := range admin_s.Handlers {
-			io.WriteString(w, "Route: "+k+"\nInfo: "+v.Info+"\n\n")
+		w.Header().Set("Content-Type", "application/json")
+		resp, err := json.Marshal(admin_s)
+		if err != nil {
+			println(err.Error())
 		}
+		w.Write(resp)
 	}
 }
 func chat_stat(w http.ResponseWriter, r *http.Request) {
