@@ -42,8 +42,8 @@ func level2str(level Lev) string {
 func New(cfg config.Config, module_name string) *Log {
 	return &Log{
 		LogLevel: cfg.Log.LogLevel,
-		Time: time.Now(),
-		Module: module_name,
+		Time:     time.Now(),
+		Module:   module_name,
 	}
 }
 
@@ -52,7 +52,7 @@ func (l Log) logf(level Lev, fun func(), format string, args ...any) {
 
 	if level >= Lev(l.LogLevel) {
 		l.Time = time.Now()
-		fmt.Printf("%s| %v %s", l.Module, l.Time.Unix(),level2str(level))
+		fmt.Printf("%s| %v %s", l.Module, l.Time.Unix(), level2str(level))
 		fmt.Printf(format, args...)
 	}
 }
