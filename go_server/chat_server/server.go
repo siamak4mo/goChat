@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net"
 	"server/chat_server/config"
-	"server/chat_server/stoken"
 	"server/chat_server/serlog"
+	"server/chat_server/stoken"
 	"strings"
 	"unicode"
 )
@@ -143,7 +143,7 @@ func (s *Server) RemoveChat(key string) {
 }
 
 func (s *Server) Serve() error {
-	s.Log = serlog.New(*s.Conf)
+	s.Log = serlog.New(*s.Conf, "Chat Server ")
 	ln, err := net.Listen("tcp", s.Conf.Server.Addr)
 
 	if err != nil {
