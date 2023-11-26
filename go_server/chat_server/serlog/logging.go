@@ -19,6 +19,7 @@ const (
 
 type Log struct {
 	Time     time.Time
+	Module   string
 	LogLevel uint
 }
 
@@ -38,10 +39,11 @@ func level2str(level Lev) string {
 	return ""
 }
 
-func New(cfg config.Config) *Log {
+func New(cfg config.Config, module_name string) *Log {
 	return &Log{
 		LogLevel: cfg.Log.LogLevel,
 		Time: time.Now(),
+		Module: module_name,
 	}
 }
 
@@ -50,7 +52,7 @@ func (l Log) logf(level Lev, fun func(), format string, args ...any) {
 
 	if level >= Lev(l.LogLevel) {
 		l.Time = time.Now()
-		fmt.Printf("%v %s", l.Time.Unix(),level2str(level))
+		fmt.Printf("%s| %v %s", l.Module, l.Time.Unix(),level2str(level))
 		fmt.Printf(format, args...)
 	}
 }
