@@ -181,7 +181,7 @@ func (s *Server) handle_clients() {
 		case P_disconnected:
 			if len(p.Payload) != 0 { // exp payload: string(IP:PORT)
 				_u := &User_t{}
-				if *p.User != (User_t{}) {
+				if p.User != nil {
 					_u = p.User
 					delete(s.Clients, p.Payload)
 					s.Log.Debugf("%s disconnected\n", _u.Username)
@@ -280,7 +280,7 @@ func (s *Server) handle_clients() {
 
 		case P_logout:
 			_u := &User_t{}
-			if *p.User != (User_t{}) {
+			if p.User != nil {
 				_u = p.User
 				s.Log.Debugf("%s loged out\n", _u.Username)
 				p.Swrite("Loged out\n", s)
@@ -304,7 +304,7 @@ func (s *Server) handle_clients() {
 
 		case P_whoami: // exp payload: string(IP:PORT)
 			_u := &User_t{}
-			if *p.User != (User_t{}) {
+			if p.User != nil {
 				_u = p.User
 			} else {
 				if s.Clients[p.Payload] != nil {
