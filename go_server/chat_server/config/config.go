@@ -13,6 +13,9 @@ const (
 	LADDR = "127.0.0.1"
 	LPORT = "8080"
 
+	ADMIN_LADDR = "127.0.0.1"
+	ADMIN_LPORT = "8081"
+
 	SECVAL      = "MyseCretvAlue"
 	BEARER      = "Bearer"
 	TOKEN_DELIM = "."
@@ -25,6 +28,9 @@ type Config struct {
 		SecVal  string `json:"token_private_key"`
 		Bearer  string `json:"token_bearer"`
 		HashAlg string `json:"token_hash_algorithm"`
+	}
+	Admin struct {
+		Addr string `json:"admin_addr"`
 	}
 	Server struct {
 		Addr     string   `json:"listen_addr"`
@@ -68,6 +74,7 @@ func Default() *Config {
 	cfg := Config{}
 
 	cfg.Server.Addr = LADDR + ":" + LPORT
+	cfg.Admin.Addr = ADMIN_LADDR + ":" + ADMIN_LPORT
 
 	cfg.Token.Bearer = BEARER
 	cfg.Token.Delim = TOKEN_DELIM
