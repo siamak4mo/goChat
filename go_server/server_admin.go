@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	server "server/chat_server"
+	"server/chat_server/serlog"
 )
 
 type AdminHandler struct {
@@ -14,6 +15,7 @@ type AdminHandler struct {
 type AdminServer struct {
 	Handlers     map[string]AdminHandler `json:"Routes"`
 	GoChatServer *server.Server          `json:"-"`
+	Loger        *serlog.Log
 }
 
 func (s *AdminServer) Server() error {
@@ -65,6 +67,7 @@ func NewAdminServer(server *server.Server) *AdminServer {
 	admin_s = &AdminServer{
 		Handlers:     h,
 		GoChatServer: server,
+		Loger: serlog.New(*conf),
 	}
 
 	return admin_s
@@ -75,7 +78,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		resp, err := json.Marshal(admin_s)
 		if err != nil {
-			println(err.Error())
+			admin_s.Loger.Warnf("json.Marshal error: %s", err.Error())
 		}
 		w.Write(resp)
 	}
@@ -100,17 +103,18 @@ func user_stat(w http.ResponseWriter, r *http.Request) {
 		}
 		resp, err := json.Marshal(res)
 		if err != nil {
-			println(err.Error())
+			admin_s.Loger.Warnf("json.Marshal error: %s", err.Error())
 		}
 		w.Write(resp)
 	}
 }
 func config_lookup(w http.ResponseWriter, r *http.Request) {
+	admin_s.Loger.Warnf("Config Lookup Access")
 	if r.Method == http.MethodGet {
 		w.Header().Set("Content-Type", "application/json")
 		resp, err := json.Marshal(chat_s.Conf)
 		if err != nil {
-			println(err.Error())
+			admin_s.Loger.Warnf("json.Marshal error: %s", err.Error())
 		}
 		w.Write(resp)
 	}
@@ -133,7 +137,7 @@ func chat_stat(w http.ResponseWriter, r *http.Request) {
 		}
 		resp, err := json.Marshal(res)
 		if err != nil {
-			println(err.Error())
+			admin_s.Loger.Warnf("json.Marshal error: %s", err.Error())
 		}
 		w.Write(resp)
 	}
@@ -153,7 +157,7 @@ func chat_users(w http.ResponseWriter, r *http.Request) {
 		}
 		resp, err := json.Marshal(res)
 		if err != nil {
-			println(err.Error())
+			admin_s.Loger.Warnf("json.Marshal error: %s", err.Error())
 		}
 		w.Write(resp)
 	}
