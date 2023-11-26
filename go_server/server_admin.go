@@ -15,7 +15,7 @@ type AdminHandler struct {
 type AdminServer struct {
 	Handlers     map[string]AdminHandler `json:"Routes"`
 	GoChatServer *server.Server          `json:"-"`
-	Loger        *serlog.Log
+	Loger        *serlog.Log             `json:"-"`
 }
 
 func (s *AdminServer) Server() error {
@@ -76,7 +76,25 @@ func NewAdminServer(server *server.Server) *AdminServer {
 func root(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		w.Header().Set("Content-Type", "application/json")
-		resp, err := json.Marshal(admin_s)
+		res := make(map[string]interface{})
+
+		res["chat server"] = struct {
+			Addr   string `json:"address"`
+			Status string `json:"status"`
+		}{
+			Addr:   chat_s.Conf.Server.Addr,
+			Status: "OK",
+		}
+		res["admin server"] = struct {
+			Handlers map[string]AdminHandler `json:"Routes"`
+			Name     string                  `json:"name"`
+			Addr     string                  `json:"address"`
+		}{
+			Name:     "Admin Server",
+			Addr:     conf.Admin.Addr,
+			Handlers: admin_s.Handlers,
+		}
+		resp, err := json.Marshal(res)
 		if err != nil {
 			admin_s.Loger.Warnf("json.Marshal error: %s", err.Error())
 		}
