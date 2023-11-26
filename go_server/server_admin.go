@@ -21,9 +21,9 @@ func (s *AdminServer) Server() error {
 		http.HandleFunc(p, fun.HandlerFunc)
 	}
 
-	err := http.ListenAndServe(":4242", nil)
+	err := http.ListenAndServe(conf.Admin.Addr, nil)
 	if err != nil {
-		println("admin server -- could not listen on :4242")
+		println("admin server -- could not listen on " + conf.Admin.Addr)
 		return err
 	}
 
