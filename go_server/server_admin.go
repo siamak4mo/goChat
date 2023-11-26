@@ -3,11 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"server/server"
-)
-
-var (
-	admin_s *AdminServer
+	server "server/chat_server"
 )
 
 type AdminHandler struct {

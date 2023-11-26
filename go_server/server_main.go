@@ -1,15 +1,16 @@
 package main
 
 import (
-	"server/server"
-	"server/server/config"
+	server "server/chat_server"
+	"server/chat_server/config"
 	"sync"
 )
 
 var (
-	chat_s *server.Server
-	conf   *config.Config
-	gwg    sync.WaitGroup
+	chat_s  *server.Server
+	admin_s *AdminServer
+	conf    *config.Config
+	gwg     sync.WaitGroup
 )
 
 func start_chat_server(wg *sync.WaitGroup) {
@@ -23,7 +24,6 @@ func start_chat_server(wg *sync.WaitGroup) {
 	}
 }
 
-
 func start_admin_server(wg *sync.WaitGroup) {
 	admin_s = NewAdminServer(chat_s)
 	err := admin_s.Server()
@@ -35,7 +35,7 @@ func start_admin_server(wg *sync.WaitGroup) {
 
 func main() {
 	conf = config.New()
-	
+
 	gwg.Add(2)
 
 	go start_chat_server(&gwg)
