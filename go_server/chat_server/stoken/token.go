@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"hash"
-	"server/server/config"
+	"server/chat_server/config"
 	"strings"
 )
 

@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
-	"server/server/config"
-	"server/server/serlog"
-	"server/server/stoken"
+	"server/chat_server/config"
+	"server/chat_server/stoken"
+	"server/chat_server/serlog"
 	"strings"
 	"unicode"
 )
