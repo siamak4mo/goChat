@@ -9,11 +9,12 @@ import (
 
 type AdminHandler struct {
 	http.HandlerFunc `json:"-"`
-	Info             string `json:"Info"`
+	Info             string `json:"info"`
+	Method           string `json:"usage"`
 }
 
 type AdminServer struct {
-	Handlers     map[string]AdminHandler `json:"Routes"`
+	Handlers     map[string]AdminHandler `json:"routes"`
 	GoChatServer *server.Server          `json:"-"`
 	Loger        *serlog.Log             `json:"-"`
 }
@@ -37,31 +38,38 @@ func NewAdminServer(server *server.Server) *AdminServer {
 
 	h["/"] = AdminHandler{
 		HandlerFunc: root,
-		Info:        "GET / PAGE",
+		Info:        "root page",
+		Method:      "GET - no param",
 	}
 	h["/chats/stat"] = AdminHandler{
 		HandlerFunc: chat_stat,
 		Info:        "statistics of chats",
+		Method:      "GET - no param",
 	}
 	h["/chat/users"] = AdminHandler{
 		HandlerFunc: chat_users,
 		Info:        "show users of a chat room",
+		Method:      "GET - URL params: ?chat=key (16 byte chat key)",
 	}
 	h["/chat/add"] = AdminHandler{
 		HandlerFunc: chat_add,
 		Info:        "make a new chat room",
+		Method:      "POST - json req: {\"name\": \"chat name\", \"banner\": \"chat message of the day\"}",
 	}
 	h["/chat/remove"] = AdminHandler{
 		HandlerFunc: chat_remove,
 		Info:        "remove a chat room",
+		Method:      "POST - json req: {\"chat key\": \"chat key (16 byte)\"}",
 	}
 	h["/users/stat"] = AdminHandler{
 		HandlerFunc: user_stat,
 		Info:        "show loged in users",
+		Method:      "GET - no param",
 	}
 	h["/config/lookup"] = AdminHandler{
 		HandlerFunc: config_lookup,
 		Info:        "show the current server configuration",
+		Method:      "GET - no param",
 	}
 
 	admin_s = &AdminServer{
