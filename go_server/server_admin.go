@@ -67,7 +67,7 @@ func NewAdminServer(server *server.Server) *AdminServer {
 	admin_s = &AdminServer{
 		Handlers:     h,
 		GoChatServer: server,
-		Loger: serlog.New(*conf, "Admin Server"),
+		Loger:        serlog.New(*conf, "Admin Server"),
 	}
 
 	return admin_s
