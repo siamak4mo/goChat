@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"net"
 	"server/chat_server/config"
 	"server/chat_server/serlog"
@@ -106,7 +107,7 @@ func (p *Packet) RemoteAddr() string {
 }
 
 func (p *Packet) Swrite(data string, s *Server) {
-	_, err := p.Conn.Write([]byte(data))
+	_, err := io.WriteString(p.Conn, data)
 
 	if err != nil {
 		s.Pac <- Packet{
