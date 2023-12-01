@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"io"
 	"server/chat_server/config"
 	"strings"
 )
@@ -83,7 +84,7 @@ func (t *Token_t) MkToken() {
 	username_b64 := base64.StdEncoding.EncodeToString(t.Username)
 
 	t.hasher.Write(t.Username)
-	t.hasher.Write([]byte(t.Conf.Token.SecVal))
+	io.WriteString(t.hasher, t.Conf.Token.SecVal)
 	signature := hex.EncodeToString(t.hasher.Sum(nil))
 	t.Signature = signature
 	t.hasher.Reset()
@@ -98,7 +99,7 @@ func (t *Token_t) Validate() bool {
 	}
 
 	t.hasher.Write(t.Username)
-	t.hasher.Write([]byte(t.Conf.Token.SecVal))
+	io.WriteString(t.hasher, t.Conf.Token.SecVal)
 	exp_sign := hex.EncodeToString(t.hasher.Sum(nil))
 
 	if strings.Compare(t.Signature, exp_sign) != 0 {
