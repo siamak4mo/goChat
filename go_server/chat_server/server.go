@@ -272,7 +272,7 @@ func (s *Server) handle_clients() {
 					tk.MkToken()
 
 					p.Swrite("Token: "+tk.Token+"\n", s)
-					s.Log.Infof("%s registered\n", p.Payload)
+					s.Log.Infof("%s registered\n", tk.Signature[0:16])
 				} else {
 					p.Swrite("User Already exists\n", s)
 				}

@@ -85,6 +85,7 @@ func (t *Token_t) MkToken() {
 	t.hasher.Write(t.Username)
 	t.hasher.Write([]byte(t.Conf.Token.SecVal))
 	signature := hex.EncodeToString(t.hasher.Sum(nil))
+	t.Signature = signature
 	t.hasher.Reset()
 
 	t.Token = fmt.Sprintf("%s%s%s", username_b64, t.Conf.Token.Delim, signature)
