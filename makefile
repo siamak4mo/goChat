@@ -11,3 +11,9 @@ build_server:
 .PHONY: run_server
 run_server:
 	$(MAKE) -C $(SERVER_SRC) run
+
+
+.PHONY: test_server
+test_server:
+	$(MAKE) -C $(SERVER_SRC) test
+
