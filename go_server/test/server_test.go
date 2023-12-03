@@ -126,8 +126,8 @@ func Test_chatserver_is_up(t *testing.T) {
 }
 
 func Test_Signup_Login(t *testing.T) {
-	user_name := "my name"
-	csc1.send2chat(C_signup, user_name) // send signup request
+	csc1.Username = "my name"
+	csc1.send2chat(C_signup, csc1.Username) // send signup request
 	res := csc1.readFchat()
 
 	if strings.Compare(res,
@@ -141,8 +141,6 @@ func Test_Signup_Login(t *testing.T) {
 	if strings.Compare(csc1.readFchat(), "Loged in") != 0 {
 		t.Fatalf("login failed")
 	}
-
-	csc1.Username = user_name
 }
 
 func Test_Second_Conn(t *testing.T) {
@@ -153,15 +151,14 @@ func Test_Second_Conn(t *testing.T) {
 }
 
 func Test_Second_Login(t *testing.T) {
-	user_name := "my name"
 	csc2.send2chat(C_login_out, csc1.Token) // login with loged in username
 
 	if strings.Compare(csc2.readFchat(), "Already Loged in") != 0 {
 		t.Fatalf("double login.")
 	}
 
-	user_name = "user-2-"
-	csc2.send2chat(C_signup, user_name)
+	csc2.Username = "user-2-"
+	csc2.send2chat(C_signup, csc2.Username)
 	_tmp := csc2.readFchat()
 
 	if strings.Compare(_tmp[0:6], "Token:") != 0 {
@@ -175,8 +172,6 @@ func Test_Second_Login(t *testing.T) {
 	if strings.Compare(csc2.readFchat(), "Loged in") != 0 {
 		t.Fatalf("login failed")
 	}
-
-	csc2.Username = user_name
 }
 
 func Test_Select_Chat_Messaging(t *testing.T) {
