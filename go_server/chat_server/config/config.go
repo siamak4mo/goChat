@@ -42,23 +42,32 @@ type Config struct {
 	}
 }
 
-func get_conf_file() (*os.File, string, error) {
-	for _, path := range strings.Split(CONF_PATHS, ":") {
-		f, err := os.Open(path)
+func fileof(path string) (f *os.File, err error) {
+	f, err = os.Open(path)
+	if err == nil {
+		return
+	} else if os.IsExist(err) {
+		return nil, errors.New("file is not readable")
+	}
+	return nil, err
+}
 
-		if err == nil {
-			return f, path, nil
-		} else if os.IsExist(err) {
-			return nil, "", err
-		}
+func get_conf_file(config_path ...string) (*os.File, string, error) {
+	for _, path := range config_path {
+		f, err := fileof(path)
+		return f, path, err
+	}
+	for _, path := range strings.Split(CONF_PATHS, ":") {
+		f, err := fileof(path)
+		return f, path, err
 	}
 	return nil, "", errors.New("Config not found")
 }
 
-func New() *Config {
+func New(config_path ...string) *Config {
 	cfg := Default()
-	
-	if f, path, err := get_conf_file(); err == nil {
+
+	if f, path, err := get_conf_file(config_path...); err == nil {
 		jp := json.NewDecoder(f)
 		if err = jp.Decode(cfg); err != nil {
 			println("loading configuration from file failed")
