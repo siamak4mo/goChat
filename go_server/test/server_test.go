@@ -95,7 +95,7 @@ func Test_chatserver_is_up(t *testing.T) {
 	}
 }
 
-func Test_Signup_Login_Logout(t *testing.T) {
+func Test_Signup_Login(t *testing.T) {
 	user_name := "my name"
 	csc1.send2chat("S " + user_name) // send signup request
 	res := csc1.readFchat()
@@ -112,4 +112,30 @@ func Test_Signup_Login_Logout(t *testing.T) {
 		t.Fatalf("login failed")
 	}
 
+}
+
+
+func Test_Second_Login(t *testing.T) {
+	user_name := "my name"
+	csc1.send2chat("L " + csc1.Tokens[user_name]) // login with loged in username
+
+	if strings.Compare(csc1.readFchat(), "Already Loged in") != 0 {
+		t.Fatalf("double login.")
+	}
+
+	user_name = "user-2-"
+	csc1.send2chat("S " + user_name)
+	_tmp := csc1.readFchat()
+
+	if strings.Compare(_tmp[0:6], "Token:") != 0 {
+		t.Fatalf("second login lailed.")
+	}
+
+	csc1.Tokens[user_name] = _tmp[7:]
+
+	csc1.send2chat("L " + csc1.Tokens[user_name])
+
+	if strings.Compare(csc1.readFchat(), "Loged in") != 0 {
+		t.Fatalf("login failed")
+	}
 }
