@@ -33,6 +33,7 @@ const (
 type ChatSerConn struct {
 	net.Conn
 	Tokens   map[string]string
+	Username string
 	MaxRetry int
 }
 
@@ -142,6 +143,7 @@ func Test_Signup_Login(t *testing.T) {
 		t.Fatalf("login failed")
 	}
 
+	csc1.Username = user_name
 }
 
 func Test_Second_Conn(t *testing.T) {
@@ -173,5 +175,59 @@ func Test_Second_Login(t *testing.T) {
 
 	if strings.Compare(csc2.readFchat(), "Loged in") != 0 {
 		t.Fatalf("login failed")
+	}
+
+	csc2.Username = user_name
+}
+
+func Test_Select_Chat_Messaging(t *testing.T) {
+	csc1.send2chat(C_chat_select, "")
+	chats := strings.Split(csc1.readFchat(), "\n")
+
+	if len(chats) != 2 {
+		t.Fatalf("the default chat server configuration must have 2 chats")
+	}
+
+	chat1 := chats[0][8:24] // `ChatID: xxx Name: yyy`[8:24] = xxx
+	chat2 := chats[1][8:24]
+
+	csc1.send2chat(C_chat_select, chat1)
+	if strings.Compare(csc1.readFchat(), "Chat doesn't exist") == 0 {
+		t.Fatalf("chat %s does not exist", chat1)
+	}
+	csc2.send2chat(C_chat_select, chat1)
+	if strings.Compare(csc2.readFchat(), "Chat doesn't exist") == 0 {
+		t.Fatalf("chat %s does not exist.", chat1)
+	}
+
+	mess := "Hi"
+	csc1.send2chat(C_text, mess)
+	_tmp := strings.Split(csc2.readFchat(), "\n")
+
+	if len(_tmp) != 2 ||
+		strings.Compare(_tmp[0], csc1.Username) != 0 ||
+		strings.Compare(_tmp[1], mess) != 0 {
+		t.Fatalf("chat text message failed.")
+	}
+
+	csc2.send2chat(C_chat_select, chat2)
+	if strings.Compare(csc2.readFchat(), "Chat doesn't exist") == 0 {
+		t.Fatalf("chat %s does not exist.", chat2)
+	}
+
+	csc1.send2chat(C_text, mess)
+
+	// reading from csc2 must has timeout
+	c1 := make(chan string, 1)
+	go func() {
+		c1 <- csc2.readFchat()
+	}()
+
+	select {
+	case <-c1:
+		t.Fatalf("message from a different chat.")
+		break
+	case <-time.After(1 * time.Second):
+		break // pass
 	}
 }
