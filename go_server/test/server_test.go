@@ -32,7 +32,7 @@ const (
 
 type ChatSerConn struct {
 	net.Conn
-	Tokens   map[string]string
+	Token    string
 	Username string
 	MaxRetry int
 }
@@ -40,7 +40,6 @@ type ChatSerConn struct {
 func NewCSC() *ChatSerConn {
 	return &ChatSerConn{
 		MaxRetry: 4,
-		Tokens:   make(map[string]string),
 	}
 }
 
@@ -109,7 +108,7 @@ func (csc *ChatSerConn) send2chat(command chatCommand, mess string) {
 }
 
 func (csc *ChatSerConn) readFchat() string {
-	buf := make([]byte, 128)
+	buf := make([]byte, 512)
 	n, err := csc.Read(buf)
 
 	if err != nil {
@@ -135,9 +134,9 @@ func Test_Signup_Login(t *testing.T) {
 		"Token: bXkgbmFtZQ==.2548acd8b40019cffd702fcf87ba50bfc8c948d3247894c7a89c5fcc847c21ff") != 0 {
 		t.Fatalf("Wrong Token")
 	}
-	csc1.Tokens[user_name] = res[7:] // `Token: xxx`[7:] = `xxx`
+	csc1.Token = res[7:] // `Token: xxx`[7:] = `xxx`
 
-	csc1.send2chat(C_login_out, csc1.Tokens[user_name]) // send login request
+	csc1.send2chat(C_login_out, csc1.Token) // send login request
 
 	if strings.Compare(csc1.readFchat(), "Loged in") != 0 {
 		t.Fatalf("login failed")
@@ -155,7 +154,7 @@ func Test_Second_Conn(t *testing.T) {
 
 func Test_Second_Login(t *testing.T) {
 	user_name := "my name"
-	csc2.send2chat(C_login_out, csc1.Tokens[user_name]) // login with loged in username
+	csc2.send2chat(C_login_out, csc1.Token) // login with loged in username
 
 	if strings.Compare(csc2.readFchat(), "Already Loged in") != 0 {
 		t.Fatalf("double login.")
@@ -169,9 +168,9 @@ func Test_Second_Login(t *testing.T) {
 		t.Fatalf("second login lailed.")
 	}
 
-	csc2.Tokens[user_name] = _tmp[7:]
+	csc2.Token = _tmp[7:]
 
-	csc2.send2chat(C_login_out, csc2.Tokens[user_name])
+	csc2.send2chat(C_login_out, csc2.Token)
 
 	if strings.Compare(csc2.readFchat(), "Loged in") != 0 {
 		t.Fatalf("login failed")
