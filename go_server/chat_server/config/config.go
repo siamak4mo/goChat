@@ -67,10 +67,11 @@ func get_conf_file(config_path ...string) (*os.File, string, error) {
 func New(config_path ...string) *Config {
 	cfg := Default()
 
-	if f, path, err := get_conf_file(config_path...); err == nil {
+	f, path, err := get_conf_file(config_path...)
+	if err == nil {
 		jp := json.NewDecoder(f)
 		if err = jp.Decode(cfg); err != nil {
-			println("loading configuration from file failed")
+			println("loading configuration failed -- " + err.Error())
 			println("loading default configuration")
 			return Default()
 		} else {
@@ -78,7 +79,7 @@ func New(config_path ...string) *Config {
 			return cfg
 		}
 	}
-	println("configuration file does not exist")
+	println("loading configuration failed -- " + err.Error())
 	println("loading default configuration")
 	return cfg
 }
