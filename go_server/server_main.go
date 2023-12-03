@@ -1,8 +1,10 @@
 package main
 
 import (
+	"os"
 	server "server/chat_server"
 	"server/chat_server/config"
+	"strings"
 	"sync"
 )
 
@@ -34,7 +36,12 @@ func start_admin_server(wg *sync.WaitGroup) {
 }
 
 func main() {
-	conf = config.New()
+	if len(os.Args) == 3 &&
+		strings.Compare(os.Args[1], "-C") == 0 {
+		conf = config.New(os.Args[2])
+	} else {
+		conf = config.New()
+	}
 
 	gwg.Add(2)
 
