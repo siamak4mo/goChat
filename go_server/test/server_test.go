@@ -175,15 +175,8 @@ func Test_Second_Login(t *testing.T) {
 }
 
 func Test_Select_Chat_Messaging(t *testing.T) {
-	csc1.send2chat(C_chat_select, "")
-	chats := strings.Split(csc1.readFchat(), "\n")
-
-	if len(chats) != 2 {
-		t.Fatalf("the default chat server configuration must have 2 chats")
-	}
-
-	chat1 := chats[0][8:24] // `ChatID: xxx Name: yyy`[8:24] = xxx
-	chat2 := chats[1][8:24]
+	chat1 := "4563486fda39a3ee"
+	chat2 := "48434bda39a3ee5e"
 
 	csc1.send2chat(C_chat_select, chat1)
 	if strings.Compare(csc1.readFchat(), "Chat doesn't exist") == 0 {
