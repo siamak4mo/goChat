@@ -5,8 +5,9 @@ GO_TEST = go test
 
 BUILD_OUT = ../server.bin
 TEST_DIR  = test
+SRC_DIR   = chat_server
 
-SRC = go.mod server/server.go server/stoken/token.go server/config/config.go server_admin.go server_main.go
+SRC = go.mod $(SRC_DIR)/server.go $(SRC_DIR)/stoken/token.go $(SRC_DIR)/config/config.go server_admin.go server_main.go
 
 all: $(BUILD_OUT)
 
