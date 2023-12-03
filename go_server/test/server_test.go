@@ -205,6 +205,7 @@ func Test_Select_Chat_Messaging(t *testing.T) {
 	csc1.send2chat(C_text, mess)
 
 	// reading from csc2 must has timeout
+	// because it should not receive anything at this time
 	c1 := make(chan string, 1)
 	go func() {
 		c1 <- csc2.readFchat()
