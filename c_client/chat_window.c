@@ -131,7 +131,6 @@ cw_read(chatw *cw, wchar_t *result, int maxlen)
 {
   int rw = 0;
   int i;
-  char c;
 
   i = cw->padding;
   reset_read(cw);
