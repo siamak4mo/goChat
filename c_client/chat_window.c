@@ -39,8 +39,8 @@ lift_up(chatw *cw, int n)
 
   if (n >= cw->row)
     {
-       werase (cw->w);
-       redrawbox (cw);
+      werase (cw->w);
+      redrawbox (cw);
     }
   else
     {
@@ -53,9 +53,7 @@ lift_up(chatw *cw, int n)
 
       for (i = cw->col - n; i<cw->col; ++i)
         for (j = cw->padding; j < cw->col - cw->padding; ++j)
-          {
-            mvwaddch (cw->w, i, j, ' ');
-          }
+          mvwaddch (cw->w, i, j, ' ');
     }
 }
 
@@ -73,7 +71,7 @@ lift_up1(chatw *cw)
 
   for (i = cw->col - 1; i<cw->col; ++i)
     for (j = cw->padding; j < cw->col - cw->padding; ++j)
-        mvwaddch (cw->w, i, j, ' ');
+      mvwaddch (cw->w, i, j, ' ');
 }
 
 void
@@ -108,7 +106,7 @@ cw_write(chatw *cw, const wchar_t *buf)
           i = cw->padding;
         }
       
-       }
+    }
   if (cw->line_c < cw->row)
     cw->line_c++;
   wrefresh (cw->w);
@@ -188,7 +186,7 @@ cw_read(chatw *cw, wchar_t *result, int maxlen)
               return rw;
             }
           else
-              mvwaddch (cw->w, cw->line_c, i++, result[rw]);
+            mvwaddch (cw->w, cw->line_c, i++, result[rw]);
           
           if (i==cw->col-cw->padding)
             {
