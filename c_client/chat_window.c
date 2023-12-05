@@ -35,6 +35,8 @@ init_chat_window(chatw *cw, int x, int y)
 static inline void
 lift_up(chatw *cw, int n)
 {
+  int i,j;
+
   if (n >= cw->row)
     {
        werase (cw->w);
@@ -42,16 +44,14 @@ lift_up(chatw *cw, int n)
     }
   else
     {
-      int i=cw->padding, j;
-      for (; i < cw->row - n - 1; ++i)
+      for (i=cw->padding; i < cw->row - n - 1; ++i)
         for (j = cw->padding; j < cw->col - cw->padding; ++j)
           {
             int c = mvwinch (cw->w, i+n, j);
             mvwaddch (cw->w, i, j, c);
           }
 
-      i = cw->col - n;
-      for (; i<cw->col; ++i)
+      for (i = cw->col - n; i<cw->col; ++i)
         for (j = cw->padding; j < cw->col - cw->padding; ++j)
           {
             mvwaddch (cw->w, i, j, ' ');
@@ -62,28 +62,26 @@ lift_up(chatw *cw, int n)
 static inline void
 lift_up1(chatw *cw)
 {
-  int i=cw->padding, j;
-  for (; i < cw->row - cw->padding -1; ++i)
+  int i, j;
+
+  for (i=cw->padding; i < cw->row - cw->padding -1; ++i)
     for (j = cw->padding; j < cw->col - cw->padding; ++j)
       {
-        int c = mvwinch (cw->w, i+1, j);
+        wchar_t c = mvwinch (cw->w, i+1, j);
         mvwaddch (cw->w, i, j, c);
       }
 
-  i = cw->col - 1;
-  for (; i<cw->col; ++i)
+  for (i = cw->col - 1; i<cw->col; ++i)
     for (j = cw->padding; j < cw->col - cw->padding; ++j)
-      {
         mvwaddch (cw->w, i, j, ' ');
-      }
 }
 
 void
 cw_write(chatw *cw, const wchar_t *buf)
 {
-  int i = cw->padding;
+  int i;
   
-  for (; *buf != '\0'; ++buf)
+  for (i = cw->padding; *buf != '\0'; ++buf)
     {
       if (cw->line_c >= cw->row - cw->padding)
         {
