@@ -3,6 +3,9 @@
 #include <string.h>
 #include "chat_window.h"
 
+#define NL 3
+#define NPAD 2
+
 chatw
 mk_chatw(int row, int col, bool boxed)
 {
@@ -15,16 +18,17 @@ set_name(chatw *cw)
   if (strlen (cw->name) == 0 || (cw->col)/3 < 6)
     return;
   
-  size_t maxlen = (cw->col)/3 - 3;
-  if (strlen (cw->name) < maxlen)
-    mvwprintw (cw->w, 0, 2, cw->name);
+  size_t maxlen = (cw->col)/NL - NL;
+  if (strlen (cw->name) <= maxlen)
+    mvwprintw (cw->w, 0, NPAD, cw->name);
   else
     {
-      char *name_cpy = malloc (maxlen + 3);
+      char *name_cpy = malloc (maxlen + NL);
       strncpy (name_cpy, cw->name, maxlen);
-      strncpy (name_cpy+maxlen, "..", 3);
+      memset (name_cpy + maxlen, '.', NL - 1);
+      name_cpy[maxlen + NL - 1]='\0';
       
-      mvwprintw (cw->w, 0, 2, name_cpy);
+      mvwprintw (cw->w, 0, NPAD, name_cpy);
     }
 }
 
