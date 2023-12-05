@@ -39,6 +39,8 @@ main (void)
   
   // make input window
   chatw inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
+  inpw.name = "my name";
+  
   // initialize cw at (cw.x + 1, 0)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
 
