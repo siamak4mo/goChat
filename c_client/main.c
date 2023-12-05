@@ -42,15 +42,13 @@ main (void)
   // initialize cw at (cw.x + 1, 0)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
 
-  wchar_t *buf = malloc (500*sizeof(chtype));
-  //  wchar_t star[10] = {'*','*','*','*','*','*','*','*','*',0};
+  wchar_t *buf = malloc (500*sizeof(wchar_t));
+  memset (buf, 0, 500);
 
   while(!(buf[0]=='E' && buf[1]=='O' && buf[2]=='F'))
     {
-      memset (buf, 0, 500);
       cw_read (&inpw, buf, 500);
       cw_write (&cw, buf);
-      //   cw_write (&cw, star);
     }
   endwin ();
   
