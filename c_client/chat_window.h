@@ -8,6 +8,7 @@ typedef struct {
   int padding;
   bool box;
   int line_c;
+  char *name;
   WINDOW *w;
 } chatw;
 

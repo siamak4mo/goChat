@@ -1,4 +1,6 @@
 #include <ncurses.h>
+#include <stdlib.h>
+#include <string.h>
 #include "chat_window.h"
 
 chatw
@@ -8,11 +10,30 @@ mk_chatw(int row, int col, bool boxed)
 }
 
 static inline void
+set_name(chatw *cw)
+{
+  if (strlen (cw->name) == 0 || (cw->col)/3 < 6)
+    return;
+  
+  size_t maxlen = (cw->col)/3 - 3;
+  if (strlen (cw->name) < maxlen)
+    mvwprintw (cw->w, 0, 2, cw->name);
+  else
+    {
+      char *name_cpy = malloc ((maxlen + 3) * sizeof(char));
+      strncpy (name_cpy, cw->name, maxlen);
+      strncpy (name_cpy+maxlen, "..", 3);
+      
+      mvwprintw (cw->w, 0, 2, name_cpy);
+    }
+}
+
+static inline void
 redrawbox(chatw *cw)
 {
   werase (cw->w);
-  refresh ();
-  box (cw->w, 0, 0); 
+  box (cw->w, 0, 0);
+  set_name (cw);
   wrefresh (cw->w);
 }
 
@@ -28,8 +49,8 @@ init_chat_window(chatw *cw, int x, int y)
 
   if (cw->box)
     redrawbox (cw);
-  else
-    refresh ();
+  
+  refresh ();
 }
 
 static inline void
@@ -119,6 +140,7 @@ reset_read(chatw *cw)
   werase (cw->w);
   refresh ();
   box (cw->w, 0, 0); 
+  set_name (cw);
   wrefresh (cw->w);
 }
 
