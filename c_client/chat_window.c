@@ -20,7 +20,7 @@ set_name(chatw *cw)
     mvwprintw (cw->w, 0, 2, cw->name);
   else
     {
-      char *name_cpy = malloc ((maxlen + 3) * sizeof(char));
+      char *name_cpy = malloc (maxlen + 3);
       strncpy (name_cpy, cw->name, maxlen);
       strncpy (name_cpy+maxlen, "..", 3);
       

@@ -45,7 +45,7 @@ main (void)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
 
   wchar_t *buf = malloc (500*sizeof(wchar_t));
-  memset (buf, 0, 500);
+  memset (buf, 0, 500*sizeof(wchar_t));
 
   while(!(buf[0]=='E' && buf[1]=='O' && buf[2]=='F'))
     {
