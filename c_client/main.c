@@ -9,12 +9,14 @@
 #include "chat_window.h"
 
 #define INP_W_LEN 4
+#define MIN_W_LEN 10
+#define MAX_BUF 500
 
 
 static inline int
 got_enough_space(struct winsize w)
 {
-  if (w.ws_row < 10 || w.ws_col < 10)
+  if (w.ws_row < MIN_W_LEN || w.ws_col < MIN_W_LEN)
     return 0;
   else return 1;
 }
@@ -44,12 +46,12 @@ main (void)
   // initialize cw at (cw.x + 1, 0)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
 
-  wchar_t *buf = malloc (500*sizeof(wchar_t));
-  memset (buf, 0, 500*sizeof(wchar_t));
+  wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
+  memset (buf, 0, MAX_BUF*sizeof(wchar_t));
 
   while(!(buf[0]=='E' && buf[1]=='O' && buf[2]=='F'))
     {
-      cw_read (&inpw, buf, 500);
+      cw_read (&inpw, buf, MAX_BUF);
       cw_write (&cw, buf);
     }
   endwin ();
