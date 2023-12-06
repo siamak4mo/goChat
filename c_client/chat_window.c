@@ -236,14 +236,19 @@ cw_read(chatw *cw, wchar_t *result, int maxlen)
                     }
                   else
                     {
-                      for (int k=cw->col - cw->padding;
-                           k>cw->padding; --k)
-                        mvwaddch (cw->w, cw->line_c, cw->col-k,
-                                  result[rw + cw->padding - k]);
-                      i = cw->col - cw->padding-1;
-                      mvwaddch (cw->w, cw->line_c, i, ' ');
-                      result[rw-1] = 0;
-                      rw -= 2;
+                      if (rw>1)
+                        {
+                          for (int k=cw->col - cw->padding;
+                               k>cw->padding; --k)
+                            mvwaddch (cw->w, cw->line_c, cw->col-k,
+                                      result[rw + cw->padding - k]);
+                          i = cw->col - cw->padding-1;
+                          mvwaddch (cw->w, cw->line_c, i, ' ');
+                          result[rw-1] = 0;
+                          rw -= 2;
+                        }
+                      else
+                        rw=-1; // to skip rw++ at the end
                     }
                 }
             }
