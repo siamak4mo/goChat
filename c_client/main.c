@@ -12,37 +12,27 @@
 #define MIN_W_LEN 10
 #define MAX_BUF 500
 
+static struct winsize w;
+static chatw cw, inpw;
 
 static inline int
-got_enough_space(struct winsize w)
+got_enough_space()
 {
+  ioctl (STDOUT_FILENO, TIOCGWINSZ, &w);
+
   if (w.ws_row < MIN_W_LEN || w.ws_col < MIN_W_LEN)
     return 0;
   else return 1;
 }
 
-int
-main (void)
+static inline void
+GUI_loop_H ()
 {
-  struct winsize w;
-  ioctl (STDOUT_FILENO, TIOCGWINSZ, &w);
-  if (!got_enough_space(w))
-    {
-      puts ("terminal is too small");
-      return -1;
-    }
-
   // init ncurses
   initscr ();
-  // make chat window (cw)
-  chatw cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
   // initialize cw at (0, 0)
+  
   init_chat_window(&cw, 0, 0);
-  
-  // make input window
-  chatw inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
-  inpw.name = "my name";
-  
   // initialize cw at (cw.x + 1, 0)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
 
@@ -55,6 +45,24 @@ main (void)
       cw_write (&cw, buf);
     }
   endwin ();
+}
+
+int
+main(void)
+{
+  if (!got_enough_space(w))
+    {
+      puts ("terminal is too small");
+      return -1;
+    }
+  // make chat window (cw)
+  inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
+  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, true);
+
+  cw.name = "shit";
+  inpw.name = "my namE";
   
+  GUI_loop_H (&cw, &inpw);
+
   return 0;
 }
