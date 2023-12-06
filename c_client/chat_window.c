@@ -100,6 +100,44 @@ lift_up1(chatw *cw)
 }
 
 void
+cw_write_char(chatw *cw, const char *buf)
+{
+  int i;
+  
+  for (i = cw->padding; *buf != '\0'; ++buf)
+    {
+      if (cw->line_c >= cw->row - cw->padding)
+        {
+          lift_up1 (cw);
+          cw->line_c = cw->row - cw->padding - 1;
+          for (; i<cw->col-cw->padding; ++i)
+            mvwaddch (cw->w, cw->line_c, i, ' ');
+          i = cw->padding;
+        }
+
+      if (*buf != '\n')
+        {
+          mvwaddch (cw->w, cw->line_c, i++, *buf);
+          if (i==cw->col-cw->padding)
+            {
+              i = cw->padding;
+              if (*(buf+1) != '\0')
+                cw->line_c++;
+            }
+        }
+      else
+        {
+          cw->line_c++;
+          i = cw->padding;
+        }
+      
+    }
+  if (cw->line_c < cw->row)
+    cw->line_c++;
+  wrefresh (cw->w);
+} 
+
+void
 cw_write(chatw *cw, const wchar_t *buf)
 {
   int i;

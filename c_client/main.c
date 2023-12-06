@@ -70,6 +70,7 @@ main(void)
 
   while(!GUI_II){};
   // do other stuff
+  cw_write_char (&cw, "GUI was initialized.");
   while(1){};
 
   return 0;
