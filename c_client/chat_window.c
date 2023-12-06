@@ -51,10 +51,10 @@ init_chat_window(chatw *cw, int x, int y)
   cw->w = newwin (cw->row, cw->col, x,y);
   cw->line_c = cw->padding;
 
+  refresh ();
+
   if (cw->box)
     redrawbox (cw);
-  
-  refresh ();
 }
 
 static inline void
@@ -143,8 +143,11 @@ reset_read(chatw *cw)
   cw->line_c = cw->padding;
   werase (cw->w);
   refresh ();
-  box (cw->w, 0, 0); 
-  set_name (cw);
+  if (cw->box)
+    {
+      box (cw->w, 0, 0);
+      set_name (cw);
+    }
   wrefresh (cw->w);
 }
 
