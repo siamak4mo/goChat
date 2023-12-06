@@ -57,10 +57,9 @@ main(void)
     }
   // make chat window (cw)
   inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
-  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, true);
+  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
 
-  cw.name = "shit";
-  inpw.name = "my namE";
+  inpw.name = "my name";
   
   GUI_loop_H (&cw, &inpw);
 
