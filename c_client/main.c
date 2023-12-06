@@ -30,14 +30,18 @@ got_enough_space()
 static inline int
 GUI_loop_H (void *)
 {
+  // make chat and input windows
+  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
+  inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
+  inpw.name = "my name";
+
   // init ncurses
   initscr ();
   // initialize cw at (0, 0)
-  
   init_chat_window(&cw, 0, 0);
   // initialize cw at (cw.x + 1, 0)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
-
+  // end of GUI initialization
   GUI_II = true;
 
   wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
@@ -60,11 +64,6 @@ main(void)
       puts ("terminal is too small");
       return -1;
     }
-  // make chat window (cw)
-  inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
-  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
-
-  inpw.name = "my name";
   
   thrd_t t;
   thrd_create (&t, GUI_loop_H, NULL);
