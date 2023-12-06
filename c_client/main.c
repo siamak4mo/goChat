@@ -6,6 +6,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <threads.h>
 #include "chat_window.h"
 
 #define INP_W_LEN 4
@@ -25,8 +26,8 @@ got_enough_space()
   else return 1;
 }
 
-static inline void
-GUI_loop_H ()
+static inline int
+GUI_loop_H (void *)
 {
   // init ncurses
   initscr ();
@@ -45,6 +46,7 @@ GUI_loop_H ()
       cw_write (&cw, buf);
     }
   endwin ();
+  return 0;
 }
 
 int
@@ -61,7 +63,10 @@ main(void)
 
   inpw.name = "my name";
   
-  GUI_loop_H (&cw, &inpw);
+  thrd_t t;
+  thrd_create (&t, GUI_loop_H, NULL);
+
+  while(1){};
 
   return 0;
 }
