@@ -15,6 +15,7 @@
 
 static struct winsize w;
 static chatw cw, inpw;
+static bool GUI_II = false; // gui is initialized
 
 static inline int
 got_enough_space()
@@ -36,6 +37,8 @@ GUI_loop_H (void *)
   init_chat_window(&cw, 0, 0);
   // initialize cw at (cw.x + 1, 0)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
+
+  GUI_II = true;
 
   wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
   memset (buf, 0, MAX_BUF*sizeof(wchar_t));
@@ -66,6 +69,8 @@ main(void)
   thrd_t t;
   thrd_create (&t, GUI_loop_H, NULL);
 
+  while(!GUI_II){};
+  // do other stuff
   while(1){};
 
   return 0;
