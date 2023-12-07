@@ -18,12 +18,12 @@ static chatw cw, inpw;
 static bool GUI_II = false; // gui is initialized
 static int rxoff, ryoff; // inpw (x,y) cursor offset
 
-#define ST_OFF() getyx (inpw.w, ryoff, rxoff);
-#define LD_OFF() wmove (inpw.w, ryoff, rxoff);
+#define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
+#define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
 #define SAFE_CALL(fun_call) do {                \
-    ST_OFF();                                   \
+    ST_CURSOR();                                   \
     fun_call;                                   \
-    LD_OFF();                                   \
+    LD_CURSOR();                                   \
     wrefresh (inpw.w);         } while (0)
 
 static inline int
