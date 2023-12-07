@@ -11,21 +11,67 @@
 #define PAC_PAD 2
 #define INVALID_SOCKET -1
 
-static int sfd = INVALID_SOCKET; // socket fd
-static char *buf;
-static int lock = 0;
-static int max_retry = 4;
+// static int sfd = INVALID_SOCKET; // socket fd
+// static char *buf;
+// static int lock = 0;
+// static int max_retry = 4;
 
-#define LOCK() lock = 1
-#define UNLOCK() lock = 0
 
-#define WAIT_LOCK() do {                        \
-    while (lock) {};                            \
-    LOCK();            } while (0)
+#define _GET_LOCK(cn) ((cn)->nbuf).lock
+
+#define LOCK(cn) _GET_LOCK(cn) = locked;
+#define UNLOCK(cn) _GET_LOCK(cn) = unlocked;
+
+#define WAIT_LOCK(cn) do {                      \
+    while (_GET_LOCK(cn)) {};                   \
+    LOCK(cn);            } while (0)
+
+
+static inline void
+net_malloc(struct net_buf *netb)
+{
+  while (netb->lock == locked) {};
+  netb->lock = locked;
+  
+  if (netb->cap > 0)
+    netb->buf = malloc (netb->cap);
+  
+  netb->lock = unlocked;
+}
+
+static inline void
+net_free(struct net_buf *netb)
+{
+  while (netb->lock == locked) {};
+  netb->lock = locked;
+  
+  free (netb->buf);
+  netb->cap = -1;
+
+  netb->lock = unlocked;
+}
+
+chat_net
+net_new()
+{
+  struct net_buf netb = {
+    .buf=NULL,
+    .cap=MAX_TR_SIZE,
+    .lock=unlocked
+  };
+
+  chat_net cn = {
+    .sfd=INVALID_SOCKET,
+    .retry2conn=4,
+    .nbuf=netb
+  };
+
+  return cn;
+}
 
 
 int
-net_init(const char *addr, int port)
+net_init(chat_net *cn, const char *addr, int port)
 {
   int res;
   struct sockaddr_in ss_in;
@@ -34,15 +80,15 @@ net_init(const char *addr, int port)
   ss_in.sin_addr.s_addr = inet_addr(addr);
   ss_in.sin_port = htons(port);
 
-  while (max_retry-- != 0)
+  while (cn->retry2conn-- != 0)
     {
-      sfd = socket (AF_INET, SOCK_STREAM, 0);
-      res = connect (sfd,
+      cn->sfd = socket (AF_INET, SOCK_STREAM, 0);
+      res = connect (cn->sfd,
                          (struct sockaddr *) &ss_in,
                          sizeof(ss_in));
       if (res==0)
         {
-          buf = malloc (MAX_TR_SIZE);
+          net_malloc (&(cn->nbuf));
           return 0;
         }
       else
@@ -53,7 +99,7 @@ net_init(const char *addr, int port)
 }
 
 static inline void
-set_packet_type(Packet type)
+set_packet_type(char *buf, Packet type)
 {
   switch(type)
     {
@@ -76,26 +122,31 @@ set_packet_type(Packet type)
 }
 
 void
-net_write(Packet type, const char *body, int len)
+net_write(chat_net *cn, Packet type,
+          const char *body, int len)
 {
-  WAIT_LOCK();
+  char *buf;
+  WAIT_LOCK(cn);
   
-  set_packet_type (type);
+  buf = (cn->nbuf).buf;
+  set_packet_type (buf, type);
 
   if (len > 0)
     memcpy (buf + PAC_PAD, body, len);
   
-  write (sfd, buf, len + PAC_PAD);
+  write (cn->sfd, buf, len + PAC_PAD);
 
-  UNLOCK();
+  UNLOCK(cn);
 }
 
 const char *
-net_read(int *len)
+net_read(chat_net *cn, int *len)
 {
-  WAIT_LOCK();
+  WAIT_LOCK(cn);
+  char *buf = (cn->nbuf).buf;
   
-  int _r = read (sfd, buf, MAX_TR_SIZE);
+  int _r = read (cn->sfd, buf,
+                 (cn->nbuf).cap);
   
   buf[_r] = 0;
   if (_r > 0)
@@ -104,18 +155,18 @@ net_read(int *len)
   if (len != NULL)
     *len = _r;
 
-  UNLOCK();
+  UNLOCK(cn);
   return buf;
 }
 
 void
-net_end()
+net_end(chat_net *cn)
 { 
-  WAIT_LOCK();
+  WAIT_LOCK(cn);
 
-  close (sfd);
-  sfd = INVALID_SOCKET;
-  free (buf);
+  close (cn->sfd);
+  cn->sfd = INVALID_SOCKET;
+  net_free (&(cn->nbuf));
 
-  UNLOCK();
+  UNLOCK(cn);
 }
