@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <threads.h>
 #include "chat_window.h"
+#include "net.h"
 
 #define INP_W_LEN 4
 #define MIN_W_LEN 10
@@ -17,6 +18,11 @@ static struct winsize w;
 static chatw cw, inpw;
 static bool GUI_II = false; // gui is initialized
 static int rxoff, ryoff; // inpw (x,y) cursor offset
+
+static char server_addr[] = "127.0.0.1";
+static int server_port = 7070;
+static char *user_token;
+static char username[] = "my name";
 
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
@@ -62,7 +68,54 @@ GUI_loop_H (void *)
       cw_write (&cw, buf);
     }
   endwin ();
+  free (buf);
   return 0;
+}
+
+static inline int
+NETWORK_loop_H(void *)
+{
+  int n;
+  chat_net cn = net_new ();
+  int res = net_init (&cn, server_addr, server_port);
+
+  if (res != 0)
+    return res;
+  SAFE_CALL(cw_write_char (&cw, " * connected to the server"));
+
+  net_write (&cn, SIGNUP, username, strlen (username));
+  const char *p = net_read (&cn, &n);
+  if (strncmp(p, "Token: ", 7) != 0)
+    {
+      SAFE_CALL(cw_write_char (&cw, " ? failed to signup - exiting"));
+      return -1;
+    }
+  else
+    {
+      user_token = malloc (n-7);
+      strncpy (user_token, p+7, n-7);
+    }
+  
+  net_write (&cn, LOGIN_OUT, user_token, strlen (user_token));
+  p = net_read (&cn, &n);
+  if (strncmp(p, "Loged in", 8) != 0)
+    {
+      SAFE_CALL(cw_write_char (&cw, " ? failed to login - exiting"));
+      return -1;
+    }
+  else
+    {
+      SAFE_CALL(cw_write_char (&cw, " * loged in"));
+    }
+
+  net_write (&cn, CHAT_SELECT, NULL, 0);
+  p = net_read (&cn, &n);
+  SAFE_CALL(cw_write_char (&cw, p));
+  SAFE_CALL(cw_write_char (&cw, " * type chatID to join..."));
+  
+
+  net_end (&cn);
+  return 0; // unreachable
 }
 
 int
@@ -78,10 +131,7 @@ main(void)
   thrd_create (&t, GUI_loop_H, NULL);
 
   while(!GUI_II){};
-  // do other stuff
-  SAFE_CALL(cw_write_char (&cw, "GUI was initialized."));
-
-  while(1){};
-
+  NETWORK_loop_H(NULL);
+  
   return 0;
 }
