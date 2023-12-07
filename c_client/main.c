@@ -16,6 +16,15 @@
 static struct winsize w;
 static chatw cw, inpw;
 static bool GUI_II = false; // gui is initialized
+static int rxoff, ryoff; // inpw (x,y) cursor offset
+
+#define ST_OFF() getyx (inpw.w, ryoff, rxoff);
+#define LD_OFF() wmove (inpw.w, ryoff, rxoff);
+#define SAFE_CALL(fun_call) do {                \
+    ST_OFF();                                   \
+    fun_call;                                   \
+    LD_OFF();                                   \
+    wrefresh (inpw.w);         } while (0)
 
 static inline int
 got_enough_space()
@@ -70,7 +79,8 @@ main(void)
 
   while(!GUI_II){};
   // do other stuff
-  cw_write_char (&cw, "GUI was initialized.");
+  SAFE_CALL(cw_write_char (&cw, "GUI was initialized."));
+
   while(1){};
 
   return 0;
