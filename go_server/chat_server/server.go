@@ -329,6 +329,7 @@ func (s *Server) handle_clients() {
 			for k, v := range s.Chats {
 				p.Swrite(fmt.Sprintf("ChatID: %s -- Name: %s\n", k, v.Name), s)
 			}
+			p.Swrite("EOF\n", s)
 			break
 		}
 	}
