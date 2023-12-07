@@ -5,7 +5,8 @@ typedef enum {
   SIGNUP = 1,
   LOGIN_OUT,
   CHAT_SELECT,
-  TEXT
+  TEXT,
+  WHOAMI
 } Packet;
 
 int net_init(const char *, int);

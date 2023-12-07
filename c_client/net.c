@@ -69,6 +69,9 @@ set_packet_type(Packet type)
     case TEXT:
       memcpy (buf, "T ", PAC_PAD);
       break;
+    case WHOAMI:
+      memcpy (buf, "W ", PAC_PAD);
+      break;
     }
 }
 
