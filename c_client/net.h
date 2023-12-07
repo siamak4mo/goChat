@@ -18,7 +18,7 @@ struct net_buf{
 typedef struct {
   int sfd; // socket file descriptor
   int retry2conn; // max retry to reconnect to the server
-  struct net_buf nbuf;
+  struct net_buf rbuf, wbuf;
 } chat_net;
 
 chat_net net_new();

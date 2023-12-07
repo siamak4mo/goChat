@@ -11,49 +11,37 @@
 #define PAC_PAD 2
 #define INVALID_SOCKET -1
 
-#define _GET_LOCK(cn) ((cn)->nbuf).lock
-#define LOCK(cn) _LOCK(_GET_LOCK(cn)))
-#define UNLOCK(cn) _UNLOCK(_GET_LOCK(cn))
-#define WAIT_LOCK(cn) _WAIT_LOCK(_GET_LOCK(cn))
-
-
 static inline void
 net_malloc(struct net_buf *netb)
 {
-  while (netb->lock == locked) {};
-  netb->lock = locked;
-  
   if (netb->cap > 0)
     netb->buf = malloc (netb->cap);
-  
-  netb->lock = unlocked;
 }
 
 static inline void
 net_free(struct net_buf *netb)
 {
-  while (netb->lock == locked) {};
-  netb->lock = locked;
-  
   free (netb->buf);
   netb->cap = -1;
-
-  netb->lock = unlocked;
 }
 
 chat_net
 net_new()
 {
-  struct net_buf netb = {
+  struct net_buf netb_R = {
     .buf=NULL,
     .cap=MAX_TR_SIZE,
-    .lock=unlocked
+  };
+  struct net_buf netb_W = {
+    .buf=NULL,
+    .cap=MAX_TR_SIZE,
   };
 
   chat_net cn = {
     .sfd=INVALID_SOCKET,
     .retry2conn=4,
-    .nbuf=netb
+    .rbuf=netb_R,
+    .wbuf=netb_W
   };
 
   return cn;
@@ -78,7 +66,8 @@ net_init(chat_net *cn, const char *addr, int port)
                      sizeof(ss_in));
       if (res==0)
         {
-          net_malloc (&(cn->nbuf));
+          net_malloc (&(cn->rbuf));
+          net_malloc (&(cn->wbuf));
           return 0;
         }
       else
@@ -116,21 +105,18 @@ net_write(chat_net *cn, Packet type,
           const char *body, int len)
 {
   char *buf;
-  WAIT_LOCK(cn);
-  
-  buf = (cn->nbuf).buf;
+
+  buf = (cn->wbuf).buf;
   set_packet_type (buf, type);
 
-  if (len > (cn->nbuf).cap - PAC_PAD)
-    len = (cn->nbuf).cap - PAC_PAD - 1;
+  if (len > (cn->wbuf).cap - PAC_PAD)
+    len = (cn->wbuf).cap - PAC_PAD - 1;
   
   if (len > 0)
     memcpy (buf + PAC_PAD, body, len);
   buf[len + PAC_PAD] = '\n';
   
   write (cn->sfd, buf, len + PAC_PAD + 1);
-
-  UNLOCK(cn);
 }
 
 void
@@ -139,13 +125,12 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
   char *buf;
   char *p;
   int len = 0;
-  WAIT_LOCK(cn);
 
   p = (char*)body;
-  buf = (cn->nbuf).buf;
+  buf = (cn->wbuf).buf;
   set_packet_type (buf, type);
 
-  while (len < (cn->nbuf).cap &&
+  while (len < (cn->wbuf).cap &&
          !(p[0] == 0 && p[1] == 0 && p[2] == 0 && p[3] == 0))
     {
       buf[len + PAC_PAD] = *p;
@@ -155,18 +140,13 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
   buf[len + PAC_PAD] = '\n';
   
   write (cn->sfd, buf, len + PAC_PAD + 1);
-
-  UNLOCK(cn);
 }
 
 const char *
 net_read(chat_net *cn, int *len)
 {
-  WAIT_LOCK(cn);
-  char *buf = (cn->nbuf).buf;
-  
-  int _r = read (cn->sfd, buf,
-                 (cn->nbuf).cap);
+  char *buf = (cn->rbuf).buf;
+  int _r = read (cn->sfd, buf, (cn->rbuf).cap);
   
   buf[_r] = 0;
   if (_r > 0)
@@ -175,18 +155,14 @@ net_read(chat_net *cn, int *len)
   if (len != NULL)
     *len = _r;
 
-  UNLOCK(cn);
   return buf;
 }
 
 void
 net_end(chat_net *cn)
 { 
-  WAIT_LOCK(cn);
-
   close (cn->sfd);
   cn->sfd = INVALID_SOCKET;
-  net_free (&(cn->nbuf));
-
-  UNLOCK(cn);
+  net_free (&(cn->rbuf));
+  net_free (&(cn->wbuf));
 }
