@@ -18,11 +18,13 @@ static struct winsize w;
 static chatw cw, inpw;
 static bool GUI_II = false; // gui is initialized
 static int rxoff, ryoff; // inpw (x,y) cursor offset
-
+static chat_net cn;
 static char server_addr[] = "127.0.0.1";
 static int server_port = 7070;
 static char *user_token;
 static char username[] = "my name";
+static bool isJoined = false;
+static char chatID[17];
 
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
@@ -62,10 +64,31 @@ GUI_loop_H (void *)
   wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
   memset (buf, 0, MAX_BUF*sizeof(wchar_t));
 
-  while(!(buf[0]=='E' && buf[1]=='O' && buf[2]=='F'))
+  while(1)
     {
       cw_read (&inpw, buf, MAX_BUF);
-      cw_write (&cw, buf);
+      if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
+        break;
+      
+      if (!isJoined)
+        { // send chat select packet
+          net_wwrite (&cn, CHAT_SELECT, buf);
+          const char *p = net_read (&cn, NULL);
+          if (strncmp (p, "Chat doesn't exist", 18) != 0)
+            {
+              isJoined = true;
+              SAFE_CALL(cw_write_char (&cw, p));
+            }
+          else
+            {
+              SAFE_CALL(cw_write_char (&cw, " ? error - try again"));
+              SAFE_CALL(cw_write_char (&cw, p));
+            }
+        }
+      else
+        { // send text packet
+          net_wwrite (&cn, TEXT, buf);
+        }
     }
   endwin ();
   free (buf);
@@ -76,7 +99,7 @@ static inline int
 NETWORK_loop_H(void *)
 {
   int n;
-  chat_net cn = net_new ();
+  cn = net_new ();
   int res = net_init (&cn, server_addr, server_port);
 
   if (res != 0)
@@ -108,11 +131,14 @@ NETWORK_loop_H(void *)
       SAFE_CALL(cw_write_char (&cw, " * loged in"));
     }
 
-  net_write (&cn, CHAT_SELECT, NULL, 0);
-  p = net_read (&cn, &n);
-  SAFE_CALL(cw_write_char (&cw, p));
   SAFE_CALL(cw_write_char (&cw, " * type chatID to join..."));
   
+  net_write (&cn, CHAT_SELECT, NULL, 0);
+  while (1)
+    {
+      p = net_read (&cn, &n);
+      SAFE_CALL(cw_write_char (&cw, p));
+    }
 
   net_end (&cn);
   return 0; // unreachable
