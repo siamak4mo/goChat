@@ -168,6 +168,21 @@ cw_write_char(chatw *cw, const char *buf)
 } 
 
 void
+cw_vawrite_char(chatw *cw, int argc, ...)
+{
+   va_list args;
+   int idx;
+   va_start(args, argc);
+   while (argc-- != 0)
+     {
+       char *p = va_arg (args, char*);
+       cw_write_char_H (cw, p, &idx);
+     }
+   end_write (cw);
+   va_end(args);
+}
+
+void
 cw_write_mess(chatw *cw, const char *buf)
 {
   const char *p = buf;
