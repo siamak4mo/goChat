@@ -118,11 +118,9 @@ lift_up1(chatw *cw)
 }
 
 void
-cw_write_char(chatw *cw, const char *buf)
+cw_write_char_H(chatw *cw, const char *buf)
 {
-  int i;
-  
-  for (i = cw->padding; *buf != '\0'; ++buf)
+  for (int i = cw->padding; *buf != '\0'; ++buf)
     {
       if (cw->line_c >= cw->row - cw->padding)
         {
@@ -150,6 +148,13 @@ cw_write_char(chatw *cw, const char *buf)
         }
       
     }
+}
+
+void
+cw_write_char(chatw *cw, const char *buf)
+{
+  cw_write_char_H(cw, buf);
+  
   if (cw->line_c < cw->row)
     cw->line_c++;
   wrefresh (cw->w);
