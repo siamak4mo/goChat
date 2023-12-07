@@ -77,6 +77,7 @@ GUI_loop_H (void *)
           if (strncmp (p, "Chat doesn't exist", 18) != 0)
             {
               isJoined = true;
+              cw_clear (&cw);
               SAFE_CALL(cw_write_char (&cw, p));
             }
           else
