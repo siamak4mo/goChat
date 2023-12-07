@@ -1,11 +1,12 @@
 CFLAGS=-g -ggdb -Wall -Wextra `pkg-config --cflags ncurses` -I.
 LDFLAGS=`pkg-config --libs ncurses`
 BUILD_OUT=../client.bin
-OBJ=main.o net.o chat_window.o
+OBJ=net.o chat_window.o
 
 
-all: $(OBJ)
-	$(CC) -o $(BUILD_OUT) $(OBJ) $(LDFLAGS)
+all: main.c $(OBJ)
+	$(CC) -c main.c -o main.o
+	$(CC) -o $(BUILD_OUT) main.o $(OBJ) $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@
