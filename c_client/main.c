@@ -153,7 +153,7 @@ NETWORK_loop_H(void *)
         SAFE_CALL(cw_write_char (&cw, p));
       else if (state == Joined)
         { // text message
-          SAFE_CALL(cw_write_char (&cw, p));
+          SAFE_CALL(cw_write_mess (&cw, p));
         }
     }
 
