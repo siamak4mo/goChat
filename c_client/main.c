@@ -26,6 +26,15 @@ static char username[] = "my name";
 static bool isJoined = false;
 static char chatID[17];
 
+typedef enum {
+  Uninitialized = 1,
+  Initialized,
+  Signedup,
+  Logedin,
+  Joined
+} Cstate;
+static Cstate state = Uninitialized;
+
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
 #define SAFE_CALL(fun_call) do {                \
@@ -70,7 +79,7 @@ GUI_loop_H (void *)
       if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
         break;
       
-      if (!isJoined)
+      if (state <= Logedin)
         { // send chat select packet
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
@@ -79,16 +88,15 @@ GUI_loop_H (void *)
               isJoined = true;
               cw_clear (&cw);
               SAFE_CALL(cw_write_char (&cw, p));
+              state = Joined;
             }
           else
-            {
-              SAFE_CALL(cw_write_char (&cw, " ? error - try again"));
-              SAFE_CALL(cw_write_char (&cw, p));
-            }
+            SAFE_CALL(cw_write_char (&cw, " ? chat not found - try again"));
         }
       else
         { // send text packet
           net_wwrite (&cn, TEXT, buf);
+          SAFE_CALL(cw_write (&cw, buf));
         }
     }
   endwin ();
@@ -106,6 +114,7 @@ NETWORK_loop_H(void *)
   if (res != 0)
     return res;
   SAFE_CALL(cw_write_char (&cw, " * connected to the server"));
+  state = Initialized;
 
   net_write (&cn, SIGNUP, username, strlen (username));
   const char *p = net_read (&cn, &n);
@@ -118,6 +127,7 @@ NETWORK_loop_H(void *)
     {
       user_token = malloc (n-7);
       strncpy (user_token, p+7, n-7);
+      state = Signedup;
     }
   
   net_write (&cn, LOGIN_OUT, user_token, strlen (user_token));
@@ -130,6 +140,7 @@ NETWORK_loop_H(void *)
   else
     {
       SAFE_CALL(cw_write_char (&cw, " * loged in"));
+      state = Logedin;
     }
 
   SAFE_CALL(cw_write_char (&cw, " * type chatID to join..."));
@@ -138,7 +149,12 @@ NETWORK_loop_H(void *)
   while (1)
     {
       p = net_read (&cn, &n);
-      SAFE_CALL(cw_write_char (&cw, p));
+      if (state <= Logedin)
+        SAFE_CALL(cw_write_char (&cw, p));
+      else
+        { // text message
+          SAFE_CALL(cw_write_char (&cw, p+1));
+        }
     }
 
   net_end (&cn);
