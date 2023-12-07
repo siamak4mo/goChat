@@ -79,7 +79,7 @@ GUI_loop_H (void *)
       if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
         break;
       
-      if (state <= Logedin)
+      if (state == Logedin)
         { // send chat select packet
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
@@ -93,7 +93,7 @@ GUI_loop_H (void *)
           else
             SAFE_CALL(cw_write_char (&cw, " ? chat not found - try again"));
         }
-      else
+      else if (state == Joined)
         { // send text packet
           net_wwrite (&cn, TEXT, buf);
           SAFE_CALL(cw_write (&cw, buf));
@@ -149,11 +149,11 @@ NETWORK_loop_H(void *)
   while (1)
     {
       p = net_read (&cn, &n);
-      if (state <= Logedin)
+      if (state == Logedin)
         SAFE_CALL(cw_write_char (&cw, p));
-      else
+      else if (state == Joined)
         { // text message
-          SAFE_CALL(cw_write_char (&cw, p+1));
+          SAFE_CALL(cw_write_char (&cw, p));
         }
     }
 
