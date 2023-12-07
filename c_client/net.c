@@ -87,13 +87,17 @@ net_write(Packet type, const char *body, int len)
   UNLOCK();
 }
 
-char *
+const char *
 net_read(int *len)
 {
   WAIT_LOCK();
   
   int _r = read (sfd, buf, MAX_TR_SIZE);
-
+  
+  buf[_r] = 0;
+  if (_r > 0)
+    buf[_r-1] = 0; // remove '\n'
+  
   if (len != NULL)
     *len = _r;
 
