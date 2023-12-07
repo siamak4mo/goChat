@@ -12,13 +12,9 @@
 #define INVALID_SOCKET -1
 
 #define _GET_LOCK(cn) ((cn)->nbuf).lock
-
-#define LOCK(cn) _GET_LOCK(cn) = locked;
-#define UNLOCK(cn) _GET_LOCK(cn) = unlocked;
-
-#define WAIT_LOCK(cn) do {                      \
-    while (_GET_LOCK(cn)) {};                   \
-    LOCK(cn);            } while (0)
+#define LOCK(cn) _LOCK(_GET_LOCK(cn)))
+#define UNLOCK(cn) _UNLOCK(_GET_LOCK(cn))
+#define WAIT_LOCK(cn) _WAIT_LOCK(_GET_LOCK(cn))
 
 
 static inline void

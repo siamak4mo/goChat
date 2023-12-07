@@ -1,6 +1,6 @@
 #ifndef NET__H__
 #define NET__H__
-#include <stdbool.h>
+#include "utils.h"
 
 typedef enum {
   SIGNUP = 1,
@@ -9,10 +9,6 @@ typedef enum {
   TEXT,
   WHOAMI
 } Packet;
-
-typedef bool lock_t;
-#define locked true
-#define unlocked false
 
 struct net_buf{
   char *buf;
