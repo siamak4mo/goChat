@@ -73,7 +73,7 @@ GUI_loop_H (void *)
   wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
   memset (buf, 0, MAX_BUF*sizeof(wchar_t));
 
-  while(1)
+  while (1)
     {
       cw_read (&inpw, buf, MAX_BUF);
       if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
@@ -83,15 +83,15 @@ GUI_loop_H (void *)
         { // send chat select packet
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
-          if (strncmp (p, "Chat doesn't exist", 18) != 0)
+          if (strncmp (p, "Chat doesn't exist", 18) == 0)
+            SAFE_CALL(cw_write_char (&cw, " ? chat not found - try again"));
+          else
             {
               isJoined = true;
               cw_clear (&cw);
               SAFE_CALL(cw_write_char (&cw, p));
               state = Joined;
             }
-          else
-            SAFE_CALL(cw_write_char (&cw, " ? chat not found - try again"));
         }
       else if (state == Joined)
         { // send text packet
