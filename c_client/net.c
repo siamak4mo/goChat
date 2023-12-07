@@ -133,6 +133,32 @@ net_write(chat_net *cn, Packet type,
   UNLOCK(cn);
 }
 
+void
+net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
+{
+  char *buf;
+  char *p;
+  int len = 0;
+  WAIT_LOCK(cn);
+
+  p = (char*)body;
+  buf = (cn->nbuf).buf;
+  set_packet_type (buf, type);
+
+  while (len < (cn->nbuf).cap &&
+         !(p[0] == 0 && p[1] == 0 && p[2] == 0 && p[3] == 0))
+    {
+      buf[len + PAC_PAD] = *p;
+      len++;
+      p += 4;
+    }
+  buf[len + PAC_PAD] = '\n';
+  
+  write (cn->sfd, buf, len + PAC_PAD + 1);
+
+  UNLOCK(cn);
+}
+
 const char *
 net_read(chat_net *cn, int *len)
 {

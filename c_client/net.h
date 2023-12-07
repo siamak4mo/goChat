@@ -24,6 +24,7 @@ typedef struct {
 chat_net net_new();
 int net_init(chat_net *, const char *, int);
 void net_write(chat_net *, Packet, const char *, int);
+void net_wwrite(chat_net *, Packet, const wchar_t *);
 const char * net_read(chat_net *, int *);
 void net_end(chat_net *);
 
