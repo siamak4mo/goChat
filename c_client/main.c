@@ -143,18 +143,24 @@ NETWORK_loop_H(void *)
       state = Logedin;
     }
 
+  net_write (&cn, CHAT_SELECT, NULL, 0);
   SAFE_CALL(cw_write_char (&cw, " * type chatID to join..."));
   
-  net_write (&cn, CHAT_SELECT, NULL, 0);
   while (1)
     {
       p = net_read (&cn, &n);
-      if (state == Logedin)
+      if (strncmp (p, "EOF", 3) == 0)
+        break;
+      else
         SAFE_CALL(cw_write_char (&cw, p));
-      else if (state == Joined)
-        { // text message
-          SAFE_CALL(cw_write_mess (&cw, p));
-        }
+    }
+
+  while (state != Joined) {};
+  while(1)
+    {
+      // text message
+      p = net_read (&cn, &n);
+      SAFE_CALL(cw_write_mess (&cw, p));
     }
 
   net_end (&cn);
