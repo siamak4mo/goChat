@@ -131,10 +131,14 @@ net_write(chat_net *cn, Packet type,
   buf = (cn->nbuf).buf;
   set_packet_type (buf, type);
 
+  if (len > (cn->nbuf).cap - PAC_PAD)
+    len = (cn->nbuf).cap - PAC_PAD - 1;
+  
   if (len > 0)
     memcpy (buf + PAC_PAD, body, len);
+  buf[len + PAC_PAD] = '\n';
   
-  write (cn->sfd, buf, len + PAC_PAD);
+  write (cn->sfd, buf, len + PAC_PAD + 1);
 
   UNLOCK(cn);
 }
