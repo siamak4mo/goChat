@@ -44,6 +44,17 @@ redrawbox(chatw *cw)
 }
 
 void
+cw_clear(chatw *cw)
+{
+  wclear (cw->w);
+  if (cw->box)
+    redrawbox (cw);
+  
+  cw->line_c = cw->padding;
+  wrefresh (cw->w);
+}
+
+void
 init_chat_window(chatw *cw, int x, int y)
 {
   if (cw->box)
