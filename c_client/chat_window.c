@@ -15,7 +15,8 @@ mk_chatw(int row, int col, bool boxed)
 static inline void
 set_name(chatw *cw)
 {
-  if (strlen (cw->name) == 0 || (cw->col)/3 < 6)
+  if (cw->name == NULL ||
+      strlen (cw->name) == 0 || (cw->col)/3 < 6)
     return;
   
   size_t maxlen = (cw->col)/NL - NL;
