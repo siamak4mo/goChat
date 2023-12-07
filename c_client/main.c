@@ -21,9 +21,9 @@ static int rxoff, ryoff; // inpw (x,y) cursor offset
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
 #define SAFE_CALL(fun_call) do {                \
-    ST_CURSOR();                                   \
+    ST_CURSOR();                                \
     fun_call;                                   \
-    LD_CURSOR();                                   \
+    LD_CURSOR();                                \
     wrefresh (inpw.w);         } while (0)
 
 static inline int

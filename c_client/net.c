@@ -11,12 +11,6 @@
 #define PAC_PAD 2
 #define INVALID_SOCKET -1
 
-// static int sfd = INVALID_SOCKET; // socket fd
-// static char *buf;
-// static int lock = 0;
-// static int max_retry = 4;
-
-
 #define _GET_LOCK(cn) ((cn)->nbuf).lock
 
 #define LOCK(cn) _GET_LOCK(cn) = locked;
@@ -84,8 +78,8 @@ net_init(chat_net *cn, const char *addr, int port)
     {
       cn->sfd = socket (AF_INET, SOCK_STREAM, 0);
       res = connect (cn->sfd,
-                         (struct sockaddr *) &ss_in,
-                         sizeof(ss_in));
+                     (struct sockaddr *) &ss_in,
+                     sizeof(ss_in));
       if (res==0)
         {
           net_malloc (&(cn->nbuf));

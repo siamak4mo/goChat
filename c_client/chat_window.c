@@ -9,7 +9,8 @@
 chatw
 mk_chatw(int row, int col, bool boxed)
 {
-  return (chatw){.row=row, .col=col, .box=boxed, .w=NULL};
+  return (chatw){.row=row,
+                 .col=col, .box=boxed, .w=NULL};
 }
 
 static inline void
@@ -71,14 +72,16 @@ lift_up(chatw *cw, int n)
   else
     {
       for (i=cw->padding; i < cw->row - n - 1; ++i)
-        for (j = cw->padding; j < cw->col - cw->padding; ++j)
+        for (j = cw->padding;
+             j < cw->col - cw->padding; ++j)
           {
             int c = mvwinch (cw->w, i+n, j);
             mvwaddch (cw->w, i, j, c);
           }
 
       for (i = cw->col - n; i<cw->col; ++i)
-        for (j = cw->padding; j < cw->col - cw->padding; ++j)
+        for (j = cw->padding;
+             j < cw->col - cw->padding; ++j)
           mvwaddch (cw->w, i, j, ' ');
     }
 }
@@ -88,15 +91,18 @@ lift_up1(chatw *cw)
 {
   int i, j;
 
-  for (i=cw->padding; i < cw->row - cw->padding -1; ++i)
-    for (j = cw->padding; j < cw->col - cw->padding; ++j)
+  for (i=cw->padding;
+       i < cw->row - cw->padding -1; ++i)
+    for (j = cw->padding;
+         j < cw->col - cw->padding; ++j)
       {
         wchar_t c = mvwinch (cw->w, i+1, j);
         mvwaddch (cw->w, i, j, c);
       }
 
   for (i = cw->col - 1; i<cw->col; ++i)
-    for (j = cw->padding; j < cw->col - cw->padding; ++j)
+    for (j = cw->padding;
+         j < cw->col - cw->padding; ++j)
       mvwaddch (cw->w, i, j, ' ');
 }
 
