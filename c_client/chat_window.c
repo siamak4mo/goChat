@@ -238,21 +238,16 @@ cw_write_mess(chatw *cw, const char *buf)
 {
   const char *p = buf;
   int c = 0;
-  char sender[13];
+  char sender[10];
 
-  while (c<10 && *p != '\n')
+  while (c<9 && *p != '\n')
     sender[c++] = *(p++);
-  sender[c++] = '|';
-  sender[c++] = ' ';
   sender[c++] = '\0';
   
   while (*p != '\n')
     p++;
 
-  int idx = cw->padding;
-  cw_write_char_H(cw, sender, &idx);
-  cw_write_char_H(cw, p+1, &idx);
-  end_write (cw);
+  cw_vawrite_char (cw, 3, sender, "| ",  p+1);
 }
 
 void
