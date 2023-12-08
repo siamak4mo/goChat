@@ -142,7 +142,7 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
   write (cn->sfd, buf, len + PAC_PAD + 1);
 }
 
-const char *
+char *
 net_read(chat_net *cn, int *len)
 {
   char *buf = (cn->rbuf).buf;
