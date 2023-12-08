@@ -265,8 +265,16 @@ pars_args(int argc, char **argv)
     {
       if (!opt.EOO && argv[0][0] == '-')
         {
-          if (get_arg (*argv, *(argv+1)))
-            printf ("unknown argument %s\n", argv[0]);
+          if (get_arg (*argv, *(argv+1)) == 1)
+            {
+              printf ("unknown argument %s\n", argv[0]);
+              return 1;
+            }
+          if (get_arg (*argv, *(argv+1)) == -1)
+            {
+              printf ("loading config from file failed\n");
+              return -1;
+            }
         }
       else
         {
@@ -280,11 +288,11 @@ int
 main(int argc, char **argv)
 {
   if (pars_args (argc, argv) != 0)
-    return -1;
+    return 1;
   if (!got_enough_space(w))
     {
       puts ("terminal is too small");
-      return -1;
+      return 1;
     }
   
   thrd_t t;
