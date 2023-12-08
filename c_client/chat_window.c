@@ -117,7 +117,7 @@ lift_up1(chatw *cw)
       mvwaddch (cw->w, i, j, ' ');
 }
 
-void
+static inline void
 cw_write_char_H(chatw *cw, const char *buf, int *i)
 { 
   for (; *buf != '\0'; ++buf)
@@ -151,6 +151,38 @@ cw_write_char_H(chatw *cw, const char *buf, int *i)
 }
 
 static inline void
+cw_write_H(chatw *cw, const wchar_t *buf, int *i)
+{
+  for (; *buf != '\0'; ++buf)
+    {
+      if (cw->line_c >= cw->row - cw->padding)
+        {
+          lift_up1 (cw);
+          cw->line_c = cw->row - cw->padding - 1;
+          for (; *i<cw->col-cw->padding; (*i)++)
+            mvwaddch (cw->w, cw->line_c, *i, ' ');
+          *i = cw->padding;
+        }
+
+      if (*buf != '\n')
+        {
+          mvwaddch (cw->w, cw->line_c, (*i)++, *buf);
+          if (*i==cw->col-cw->padding)
+            {
+              *i = cw->padding;
+              if (*(buf+1) != '\0')
+                cw->line_c++;
+            }
+        }
+      else
+        {
+          cw->line_c++;
+          *i = cw->padding;
+        }
+    }
+}
+
+static inline void
 end_write(chatw *cw)
 {
   if (cw->line_c < cw->row)
@@ -168,15 +200,17 @@ cw_write_char(chatw *cw, const char *buf)
 } 
 
 void
-cw_vawrite_char(chatw *cw, int argc, ...)
+cw_vawrite(chatw *cw, int argc, ...)
 {
    va_list args;
-   int idx;
-   va_start(args, argc);
+   int idx = cw->padding;
+   va_start (args, argc);
+   
    while (argc-- != 0)
      {
-       char *p = va_arg (args, char*);
-       cw_write_char_H (cw, p, &idx);
+       wchar_t *p = (wchar_t*) va_arg (args, char*);
+       if (p!=NULL)
+         cw_write_H (cw, p, &idx);
      }
    end_write (cw);
    va_end(args);
@@ -207,39 +241,10 @@ cw_write_mess(chatw *cw, const char *buf)
 void
 cw_write(chatw *cw, const wchar_t *buf)
 {
-  int i;
-  
-  for (i = cw->padding; *buf != '\0'; ++buf)
-    {
-      if (cw->line_c >= cw->row - cw->padding)
-        {
-          lift_up1 (cw);
-          cw->line_c = cw->row - cw->padding - 1;
-          for (; i<cw->col-cw->padding; ++i)
-            mvwaddch (cw->w, cw->line_c, i, ' ');
-          i = cw->padding;
-        }
+  int i = cw->padding;
 
-      if (*buf != '\n')
-        {
-          mvwaddch (cw->w, cw->line_c, i++, *buf);
-          if (i==cw->col-cw->padding)
-            {
-              i = cw->padding;
-              if (*(buf+1) != '\0')
-                cw->line_c++;
-            }
-        }
-      else
-        {
-          cw->line_c++;
-          i = cw->padding;
-        }
-      
-    }
-  if (cw->line_c < cw->row)
-    cw->line_c++;
-  wrefresh (cw->w);
+  cw_write_H (cw, buf, &i);
+  end_write (cw);
 }
 
 static inline void
