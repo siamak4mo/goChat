@@ -52,6 +52,10 @@ static Cstate state = Uninitialized;
     LD_CURSOR();                                \
     wrefresh (inpw.w);         } while (0)
 
+// config file handling
+static inline int load_config_from_file(const char *path);
+static inline int save_config(const char *path);
+
 static inline int
 got_enough_space()
 {
@@ -171,6 +175,9 @@ NETWORK_loop_H(void *)
       inpw.name = opt.username;
     }
 
+  // save configuration to the default path
+  save_config ("/tmp/client.config");
+
   // begin to select chat to join
   net_write (&cn, CHAT_SELECT, NULL, 0);
   SAFE_CALL(cw_write_char (&cw, " * type chatID to join..."));
@@ -238,7 +245,22 @@ load_config_from_file(const char *path)
   
   free (key);
   free (val);
+  fclose (f);
   return res;
+}
+
+static inline int
+save_config(const char *path)
+{
+  FILE *f = fopen (path, "w+");
+  if (f==NULL)
+    return 1;
+  fprintf (f, "server_addr %s\n", opt.server_addr);
+  fprintf (f, "server_port %d\n", opt.server_port);
+  fprintf (f, "username %s\n", opt.username);
+  fprintf (f, "user_token %s\n", opt.user_token);
+  fclose (f);
+  return 0;
 }
 
 static inline int
