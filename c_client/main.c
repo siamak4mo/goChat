@@ -16,7 +16,6 @@
 
 static struct winsize w;
 static chatw cw, inpw;
-static bool GUI_II = false; // gui is initialized
 static int rxoff, ryoff; // inpw (x,y) cursor offset
 static chat_net cn;
 static char server_addr[] = "127.0.0.1";
@@ -68,7 +67,7 @@ GUI_loop_H (void *)
   // initialize cw at (cw.x + 1, 0)
   init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
   // end of GUI initialization
-  GUI_II = true;
+  state = Initialized;
 
   wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
   memset (buf, 0, MAX_BUF*sizeof(wchar_t));
@@ -189,7 +188,7 @@ main(void)
   thrd_t t;
   thrd_create (&t, GUI_loop_H, NULL);
 
-  while(!GUI_II){};
+  while(state != Initialized){};
   NETWORK_loop_H(NULL);
   
   return 0;
