@@ -89,14 +89,15 @@ GUI_loop_H (void *)
             {
               isJoined = true;
               cw_clear (&cw);
-              SAFE_CALL(cw_write_char (&cw, p));
+              SAFE_CALL(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
               state = Joined;
             }
         }
       else if (state == Joined)
         { // send text packet
           net_wwrite (&cn, TEXT, buf);
-          SAFE_CALL(cw_write (&cw, buf));
+          
+          SAFE_CALL(cw_write_my_mess(&cw, buf));
         }
     }
   endwin ();
@@ -151,6 +152,11 @@ NETWORK_loop_H(void *)
       p = net_read (&cn, &n);
       if (strncmp (p, "EOF", 3) == 0)
         break;
+      else if (strncmp (p+n-4, "EOF", 3) == 0) 
+        {
+          SAFE_CALL(cw_write_char (&cw, p));
+          break;
+        }
       else
         SAFE_CALL(cw_write_char (&cw, p));
     }
@@ -160,7 +166,7 @@ NETWORK_loop_H(void *)
     {
       // text message
       p = net_read (&cn, &n);
-      SAFE_CALL(cw_write_mess (&cw, p));
+      SAFE_CALL(cw_write_char_mess (&cw, p));
     }
 
   net_end (&cn);
