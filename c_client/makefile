@@ -14,4 +14,4 @@ all: main.c $(OBJ)
 
 .PHONY: clean
 clean:
-	rm $(OBJ) $(BUILD_OUT)
+	rm main.o $(OBJ) $(BUILD_OUT)
