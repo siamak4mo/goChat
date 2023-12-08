@@ -200,6 +200,46 @@ NETWORK_loop_H(void *)
 }
 
 static inline int
+load_config_from_file(const char *path)
+{
+  int res = 0;
+  FILE *f = fopen (path, "r");
+  if (f==NULL)
+    return res;
+  
+  char *key = malloc (32);
+  char *val = malloc (128);
+  
+  while (fscanf(f, "%32[^=]=%128[^\n]%*c", key, val) == 2)
+    {
+      printf ("[%s]=[%s]\n", key,val);
+      if (!strcmp (key, "server_addr"))
+        strcpy (opt.server_addr, val);
+      else if (!strcmp (key, "server_port"))
+        opt.server_port = atoi (val);
+      else if (!strcmp (key, "username"))
+        {
+          opt.username = malloc (strlen (val));
+          strcpy (opt.username, val);
+        }
+      else if (!strcmp (key, "user_token"))
+        {
+          opt.user_token = malloc (strlen (val));
+          strcpy (opt.user_token, val);
+        }
+      else
+        {
+          res = -1;
+          break;
+        }
+    }
+  
+  free (key);
+  free (val);
+  return res;
+}
+
+static inline int
 get_arg(const char *flag, char *arg)
 {
   if (!strcmp (flag, "--"))
@@ -212,6 +252,8 @@ get_arg(const char *flag, char *arg)
     opt.username = arg;
   else if (!strcmp (flag, "-t") || !strcmp (flag, "--token"))
     opt.user_token = arg;
+  else if (!strcmp (flag, "-c") || !strcmp (flag, "--config"))
+    return load_config_from_file (arg);
   else
     return 1;
   return 0;
