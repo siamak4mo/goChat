@@ -76,6 +76,8 @@ GUI_loop_H (void *)
   while (1)
     {
       cw_read (&inpw, buf, MAX_BUF);
+      if (buf[0]=='\0')
+        continue;
       if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
         break;
       
