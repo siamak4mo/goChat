@@ -131,9 +131,9 @@ NETWORK_loop_H(void *)
   SAFE_CALL(cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
-  if (opt.user_token == NULL)
+  if (opt.user_token == NULL || strlen (opt.user_token) == 0)
     { // to signup
-      if (opt.username == NULL)
+      if (opt.username == NULL || strlen (opt.username) == 0)
         {
           SAFE_CALL(cw_write_char (&cw, " ? either a token or username is expected - exiting"));
           return -1;
