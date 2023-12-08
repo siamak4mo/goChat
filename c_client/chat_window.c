@@ -234,7 +234,7 @@ cw_vawrite_char(chatw *cw, int argc, ...)
 }
 
 void
-cw_write_mess(chatw *cw, const char *buf)
+cw_write_char_mess(chatw *cw, const char *buf)
 {
   const char *p = buf;
   int c = 0;
