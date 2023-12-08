@@ -210,9 +210,8 @@ load_config_from_file(const char *path)
   char *key = malloc (32);
   char *val = malloc (128);
   
-  while (fscanf(f, "%32[^=]=%128[^\n]%*c", key, val) == 2)
+  while (fscanf(f, "%32[^ ] %128[^\n]%*c", key, val) == 2)
     {
-      printf ("[%s]=[%s]\n", key,val);
       if (!strcmp (key, "server_addr"))
         strcpy (opt.server_addr, val);
       else if (!strcmp (key, "server_port"))
