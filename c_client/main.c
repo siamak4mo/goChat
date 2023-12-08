@@ -208,7 +208,7 @@ load_config_from_file(const char *path)
   int res = 0;
   FILE *f = fopen (path, "r");
   if (f==NULL)
-    return res;
+    return ERR_LOAD_CONFIG;
   
   char *key = malloc (32);
   char *val = malloc (128);
