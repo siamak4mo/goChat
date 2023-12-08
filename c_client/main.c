@@ -41,6 +41,9 @@ typedef enum {
 } Cstate;
 static Cstate state = Uninitialized;
 
+#define ERR_LOAD_CONFIG -1
+#define ERR_UNKNOWN_ARG 1
+
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
 #define SAFE_CALL(fun_call) do {                \
@@ -228,7 +231,7 @@ load_config_from_file(const char *path)
         }
       else
         {
-          res = -1;
+          res = ERR_LOAD_CONFIG;
           break;
         }
     }
@@ -254,7 +257,7 @@ get_arg(const char *flag, char *arg)
   else if (!strcmp (flag, "-c") || !strcmp (flag, "--config"))
     return load_config_from_file (arg);
   else
-    return 1;
+    return ERR_UNKNOWN_ARG;
   return 0;
 }
 
@@ -265,12 +268,12 @@ pars_args(int argc, char **argv)
     {
       if (!opt.EOO && argv[0][0] == '-')
         {
-          if (get_arg (*argv, *(argv+1)) == 1)
+          if (get_arg (*argv, *(argv+1)) == ERR_UNKNOWN_ARG)
             {
               printf ("unknown argument %s\n", argv[0]);
               return 1;
             }
-          if (get_arg (*argv, *(argv+1)) == -1)
+          if (get_arg (*argv, *(argv+1)) == ERR_LOAD_CONFIG)
             {
               printf ("loading config from file failed\n");
               return -1;
