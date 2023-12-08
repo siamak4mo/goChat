@@ -126,16 +126,14 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
   char *p;
   int len = 0;
 
-  p = (char*)body;
   buf = (cn->wbuf).buf;
   set_packet_type (buf, type);
 
-  while (len < (cn->wbuf).cap &&
-         !(p[0] == 0 && p[1] == 0 && p[2] == 0 && p[3] == 0))
+  WCHAR4(p, body)
     {
       buf[len + PAC_PAD] = *p;
-      len++;
-      p += 4;
+      if (++len >= (cn->wbuf).cap)
+        break;
     }
   buf[len + PAC_PAD] = '\n';
   
