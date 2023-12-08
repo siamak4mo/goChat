@@ -29,8 +29,6 @@ struct Options {
   bool EOO; // end of options
 };
 static struct Options opt = {
-  .server_addr = "127.0.0.1",
-  .server_port = 7070,
   .EOO = false,
 };
 
@@ -124,17 +122,22 @@ NETWORK_loop_H(void *)
   cn = net_new ();
 
   // init connection to the server
-  if (strlen (opt.server_addr) == 0)
-    return -1;
-  if (net_init (&cn, opt.server_addr, opt.server_port) != 0)
-    return -1;
+  if (strlen (opt.server_addr) == 0 ||
+    net_init (&cn, opt.server_addr, opt.server_port) != 0)
+    {
+      SAFE_CALL(cw_write_char (&cw, " ? could not connect to the server - exiting"));
+      return -1;
+    }
   SAFE_CALL(cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
   if (opt.user_token == NULL)
     { // to signup
       if (opt.username == NULL)
-        return -1;
+        {
+          SAFE_CALL(cw_write_char (&cw, " ? either a token or username is expected - exiting"));
+          return -1;
+        }
       net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
       p = net_read (&cn, &n);
       if (strncmp(p, "Token: ", 7) != 0)
