@@ -28,5 +28,9 @@ typedef bool lock_t;
   for (char *__p = X;                           \
        ({(_wch) = *__p; *__p != '\0';}); __p++)
 
+#define wcharcpy(dest, src)                     \
+  wchar_t *X = src;                             \
+  char *_ptr, *p = dest;                        \
+  WCHAR4(_ptr, X) *(p++) = *_ptr;
 
 #endif
