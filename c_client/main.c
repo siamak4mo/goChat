@@ -67,7 +67,6 @@ GUI_loop_H (void *)
   // make chat and input windows
   cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
   inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
-  inpw.name = opt.username;
 
   // init ncurses
   initscr ();
@@ -101,6 +100,8 @@ GUI_loop_H (void *)
               cw_clear (&cw);
               SAFE_CALL(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
               state = Joined;
+              wcharcpy(chatID, buf);
+              cw.name = chatID;
             }
         }
       else if (state == Joined)
@@ -121,27 +122,35 @@ NETWORK_loop_H(void *)
   int n;
   char *p;
   cn = net_new ();
-  int res = net_init (&cn, opt.server_addr, opt.server_port);
 
-  if (res != 0)
-    return res;
+  // init connection to the server
+  if (strlen (opt.server_addr) == 0)
+    return -1;
+  if (net_init (&cn, opt.server_addr, opt.server_port) != 0)
+    return -1;
   SAFE_CALL(cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
-  net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
-  p = net_read (&cn, &n);
-  if (strncmp(p, "Token: ", 7) != 0)
-    {
-      SAFE_CALL(cw_write_char (&cw, " ? failed to signup - exiting"));
-      return -1;
+  if (opt.user_token == NULL)
+    { // to signup
+      if (opt.username == NULL)
+        return -1;
+      net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
+      p = net_read (&cn, &n);
+      if (strncmp(p, "Token: ", 7) != 0)
+        {
+          SAFE_CALL(cw_write_char (&cw, " ? failed to signup - exiting"));
+          return -1;
+        }
+      else
+        {
+          opt.user_token = malloc (n-7);
+          strncpy (opt.user_token, p+7, n-7);
+          state = Signedup;
+        }
     }
-  else
-    {
-      opt.user_token = malloc (n-7);
-      strncpy (opt.user_token, p+7, n-7);
-      state = Signedup;
-    }
-  
+
+  // begin to login
   net_write (&cn, LOGIN_OUT, opt.user_token, strlen (opt.user_token));
   p = net_read (&cn, &n);
   if (strncmp(p, "Loged in", 8) != 0)
@@ -153,8 +162,10 @@ NETWORK_loop_H(void *)
     {
       SAFE_CALL(cw_write_char (&cw, " * loged in"));
       state = Logedin;
+      inpw.name = opt.username;
     }
 
+  // begin to select chat to join
   net_write (&cn, CHAT_SELECT, NULL, 0);
   SAFE_CALL(cw_write_char (&cw, " * type chatID to join..."));
   
