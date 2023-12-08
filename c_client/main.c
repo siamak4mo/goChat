@@ -109,6 +109,7 @@ static inline int
 NETWORK_loop_H(void *)
 {
   int n;
+  char *p;
   cn = net_new ();
   int res = net_init (&cn, server_addr, server_port);
 
@@ -118,7 +119,7 @@ NETWORK_loop_H(void *)
   state = Initialized;
 
   net_write (&cn, SIGNUP, username, strlen (username));
-  const char *p = net_read (&cn, &n);
+  p = net_read (&cn, &n);
   if (strncmp(p, "Token: ", 7) != 0)
     {
       SAFE_CALL(cw_write_char (&cw, " ? failed to signup - exiting"));
@@ -152,8 +153,9 @@ NETWORK_loop_H(void *)
       p = net_read (&cn, &n);
       if (strncmp (p, "EOF", 3) == 0)
         break;
-      else if (strncmp (p+n-4, "EOF", 3) == 0) 
+      else if (n>4 && strncmp (p+n-4, "EOF", 3) == 0) 
         {
+          p[n-4] = '\0';
           SAFE_CALL(cw_write_char (&cw, p));
           break;
         }
