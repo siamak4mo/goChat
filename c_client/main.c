@@ -18,12 +18,21 @@ static struct winsize w;
 static chatw cw, inpw;
 static int rxoff, ryoff; // inpw (x,y) cursor offset
 static chat_net cn;
-static char server_addr[] = "127.0.0.1";
-static int server_port = 7070;
-static char *user_token;
-static char username[] = "my name";
 static bool isJoined = false;
 static char chatID[17];
+
+struct Options {
+  char server_addr[16];
+  int server_port;
+  char *user_token;
+  char *username;
+  bool EOO; // end of options
+};
+static struct Options opt = {
+  .server_addr = "127.0.0.1",
+  .server_port = 7070,
+  .EOO = false,
+};
 
 typedef enum {
   Uninitialized = 1,
@@ -58,7 +67,7 @@ GUI_loop_H (void *)
   // make chat and input windows
   cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
   inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
-  inpw.name = "my name";
+  inpw.name = opt.username;
 
   // init ncurses
   initscr ();
@@ -112,14 +121,14 @@ NETWORK_loop_H(void *)
   int n;
   char *p;
   cn = net_new ();
-  int res = net_init (&cn, server_addr, server_port);
+  int res = net_init (&cn, opt.server_addr, opt.server_port);
 
   if (res != 0)
     return res;
   SAFE_CALL(cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
-  net_write (&cn, SIGNUP, username, strlen (username));
+  net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
   p = net_read (&cn, &n);
   if (strncmp(p, "Token: ", 7) != 0)
     {
@@ -128,12 +137,12 @@ NETWORK_loop_H(void *)
     }
   else
     {
-      user_token = malloc (n-7);
-      strncpy (user_token, p+7, n-7);
+      opt.user_token = malloc (n-7);
+      strncpy (opt.user_token, p+7, n-7);
       state = Signedup;
     }
   
-  net_write (&cn, LOGIN_OUT, user_token, strlen (user_token));
+  net_write (&cn, LOGIN_OUT, opt.user_token, strlen (opt.user_token));
   p = net_read (&cn, &n);
   if (strncmp(p, "Loged in", 8) != 0)
     {
@@ -176,9 +185,45 @@ NETWORK_loop_H(void *)
   return 0; // unreachable
 }
 
-int
-main(void)
+static inline int
+get_arg(const char *flag, char *arg)
 {
+  if (!strcmp (flag, "--"))
+    opt.EOO = true;
+  else if (!strcmp (flag, "-s") || !strcmp (flag, "--server"))
+    strcpy (opt.server_addr, arg);
+  else if (!strcmp (flag, "-p") || !strcmp (flag, "--port"))
+    opt.server_port = atoi (arg);
+  else if (!strcmp (flag, "-u") || !strcmp (flag, "--username"))
+    opt.username = arg;
+  else
+    return 1;
+  return 0;
+}
+
+static inline int
+pars_args(int argc, char **argv)
+{
+  for (argc--, argv++; argc > 0; argc--, argv++)
+    {
+      if (!opt.EOO && argv[0][0] == '-')
+        {
+          if (get_arg (*argv, *(argv+1)))
+            printf ("unknown argument %s\n", argv[0]);
+        }
+      else
+        {
+          // dash-dash prefixed
+        }
+    }
+  return 0;
+}
+
+int
+main(int argc, char **argv)
+{
+  if (pars_args (argc, argv) != 0)
+    return -1;
   if (!got_enough_space(w))
     {
       puts ("terminal is too small");
