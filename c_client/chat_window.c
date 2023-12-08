@@ -208,9 +208,26 @@ cw_vawrite(chatw *cw, int argc, ...)
    
    while (argc-- != 0)
      {
-       wchar_t *p = (wchar_t*) va_arg (args, char*);
+       wchar_t *p = va_arg (args, wchar_t*);
        if (p!=NULL)
          cw_write_H (cw, p, &idx);
+     }
+   end_write (cw);
+   va_end(args);
+}
+
+void
+cw_vawrite_char(chatw *cw, int argc, ...)
+{
+   va_list args;
+   int idx = cw->padding;
+   va_start (args, argc);
+   
+   while (argc-- != 0)
+     {
+       char *p = va_arg (args, char*);
+       if (p!=NULL)
+         cw_write_char_H (cw, p, &idx);
      }
    end_write (cw);
    va_end(args);

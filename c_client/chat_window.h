@@ -18,7 +18,8 @@ void cw_clear(chatw *);
 void cw_write(chatw *, const wchar_t *);
 void cw_write_char(chatw *, const char *);
 void cw_write_mess(chatw *, const char *);
-void cw_vawrite(chatw *cw, int argc, ...);
+void cw_vawrite(chatw *, int, ...);
+void cw_vawrite_char(chatw *, int, ...);
 chatw mk_chatw(int, int, bool);
 int cw_read(chatw *, wchar_t *, int);
 #endif
