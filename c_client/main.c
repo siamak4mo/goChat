@@ -163,7 +163,7 @@ NETWORK_loop_H(void *)
     }
   else
     {
-      SAFE_CALL(cw_write_char (&cw, " * loged in"));
+      SAFE_CALL(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
       state = Logedin;
       inpw.name = opt.username;
     }
@@ -210,6 +210,8 @@ get_arg(const char *flag, char *arg)
     opt.server_port = atoi (arg);
   else if (!strcmp (flag, "-u") || !strcmp (flag, "--username"))
     opt.username = arg;
+  else if (!strcmp (flag, "-t") || !strcmp (flag, "--token"))
+    opt.user_token = arg;
   else
     return 1;
   return 0;
