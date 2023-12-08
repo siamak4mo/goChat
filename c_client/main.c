@@ -53,6 +53,7 @@ static Cstate state = Uninitialized;
     wrefresh (inpw.w);         } while (0)
 
 // config file handling
+static const char default_config_path[] = "/tmp/client.config";
 static inline int load_config_from_file(const char *path);
 static inline int save_config(const char *path);
 
@@ -176,7 +177,7 @@ NETWORK_loop_H(void *)
     }
 
   // save configuration to the default path
-  save_config ("/tmp/client.config");
+  save_config (default_config_path);
 
   // begin to select chat to join
   net_write (&cn, CHAT_SELECT, NULL, 0);
@@ -213,7 +214,13 @@ static inline int
 load_config_from_file(const char *path)
 {
   int res = 0;
-  FILE *f = fopen (path, "r");
+  FILE *f;
+
+  if (path == NULL || strlen (path) == 0)
+      f = fopen (default_config_path, "r");
+  else
+    f = fopen (path, "r");
+  
   if (f==NULL)
     return ERR_LOAD_CONFIG;
   
