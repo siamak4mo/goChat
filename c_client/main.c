@@ -62,6 +62,9 @@ __exit(int code)
 {
   // free ncurses mem
   endwin ();
+  // free chat window memory
+  cw_end (&cw);
+  cw_end (&inpw);
   // free opt memory
   if (opt.username != NULL)
     free (opt.username);
@@ -123,7 +126,7 @@ GUI_loop_H (void *)
               SAFE_CALL(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
               state = Joined;
               wcharcpy(chatID, buf);
-              cw.name = chatID;
+              cw_set_name (&cw, chatID);
             }
         }
       else if (state == Joined)
@@ -189,7 +192,7 @@ NETWORK_loop_H(void *)
     {
       SAFE_CALL(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
       state = Logedin;
-      inpw.name = opt.username;
+      cw_set_name (&inpw, opt.username);
     }
 
   // save configuration to the default path
