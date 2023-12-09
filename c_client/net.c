@@ -21,8 +21,11 @@ net_malloc(struct net_buf *netb)
 static inline void
 net_free(struct net_buf *netb)
 {
-  free (netb->buf);
-  netb->cap = -1;
+  if (netb->nuf != NULL && net->cap > 0)
+    {
+      free (netb->buf);
+      netb->cap = -1;
+    }
 }
 
 chat_net

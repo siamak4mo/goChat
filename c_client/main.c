@@ -57,6 +57,20 @@ static const char default_config_path[] = "/tmp/client.config";
 static inline int load_config_from_file(const char *path);
 static inline int save_config(const char *path);
 
+static void
+__exit(int code)
+{
+  endwin ();
+  if (opt.username != NULL)
+    free (opt.username);
+  if (opt.user_token != NULL)
+    free (opt.username);
+
+  net_end (nc);
+
+  exit (0);
+}
+
 static inline int
 got_enough_space()
 {
@@ -117,8 +131,8 @@ GUI_loop_H (void *)
           SAFE_CALL(cw_write_my_mess(&cw, buf));
         }
     }
-  endwin ();
   free (buf);
+  __exit(0);
   return 0;
 }
 

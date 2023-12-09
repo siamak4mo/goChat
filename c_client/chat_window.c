@@ -31,6 +31,7 @@ set_name(chatw *cw)
       name_cpy[maxlen + NL - 1]='\0';
       
       mvwprintw (cw->w, 0, NPAD, name_cpy);
+      free (name_cpy);
     }
 }
 
