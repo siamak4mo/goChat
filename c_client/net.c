@@ -103,7 +103,7 @@ set_packet_type(char *buf, Packet type)
     }
 }
 
-void
+int
 net_write(chat_net *cn, Packet type,
           const char *body, int len)
 {
@@ -119,10 +119,10 @@ net_write(chat_net *cn, Packet type,
     memcpy (buf + PAC_PAD, body, len);
   buf[len + PAC_PAD] = '\n';
   
-  write (cn->sfd, buf, len + PAC_PAD + 1);
+  return write (cn->sfd, buf, len + PAC_PAD + 1);
 }
 
-void
+int
 net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
 {
   char *buf;
@@ -140,7 +140,7 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
     }
   buf[len + PAC_PAD] = '\n';
   
-  write (cn->sfd, buf, len + PAC_PAD + 1);
+  return write (cn->sfd, buf, len + PAC_PAD + 1);
 }
 
 char *
