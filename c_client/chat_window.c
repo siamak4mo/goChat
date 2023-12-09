@@ -366,3 +366,10 @@ cw_read(chatw *cw, wchar_t *result, int maxlen)
   
   return rw;
 }
+
+void
+cw_end (chatw *cw)
+{
+  if (cw->name != NULL)
+    free (cw->name);
+}
