@@ -46,7 +46,7 @@ static Cstate state = Uninitialized;
 
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
-#define SAFE_CALL(fun_call) do {                \
+#define SAFE_CW_WRITE(fun_call) do {                \
     ST_CURSOR();                                \
     fun_call;                                   \
     LD_CURSOR();                                \
@@ -116,12 +116,12 @@ GUI_loop_H (void *)
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
           if (strncmp (p, "Chat doesn't exist", 18) == 0)
-            SAFE_CALL(cw_write_char (&cw, " ? chat not found - try again"));
+            SAFE_CW_WRITE(cw_write_char (&cw, " ? chat not found - try again"));
           else
             {
               isJoined = true;
               cw_clear (&cw);
-              SAFE_CALL(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
+              SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
               state = Joined;
               wcharcpy(chatID, buf);
               cw_set_name (&cw, chatID);
@@ -131,7 +131,7 @@ GUI_loop_H (void *)
         { // send text packet
           net_wwrite (&cn, TEXT, buf);
           
-          SAFE_CALL(cw_write_my_mess(&cw, buf));
+          SAFE_CW_WRITE(cw_write_my_mess(&cw, buf));
         }
     }
   free (buf);
@@ -150,24 +150,24 @@ NETWORK_loop_H(void *)
   if (strlen (opt.server_addr) == 0 ||
     net_init (&cn, opt.server_addr, opt.server_port) != 0)
     {
-      SAFE_CALL(cw_write_char (&cw, " ? could not connect to the server - exiting"));
+      SAFE_CW_WRITE(cw_write_char (&cw, " ? could not connect to the server - exiting"));
       return -1;
     }
-  SAFE_CALL(cw_write_char (&cw, " * connected to the server"));
+  SAFE_CW_WRITE(cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
   if (opt.user_token == NULL || strlen (opt.user_token) == 0)
     { // to signup
       if (opt.username == NULL || strlen (opt.username) == 0)
         {
-          SAFE_CALL(cw_write_char (&cw, " ? either a token or username is expected - exiting"));
+          SAFE_CW_WRITE(cw_write_char (&cw, " ? either a token or username is expected - exiting"));
           return -1;
         }
       net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
       p = net_read (&cn, &n);
       if (strncmp(p, "Token: ", 7) != 0)
         {
-          SAFE_CALL(cw_write_char (&cw, " ? failed to signup - exiting"));
+          SAFE_CW_WRITE(cw_write_char (&cw, " ? failed to signup - exiting"));
           return -1;
         }
       else
@@ -183,12 +183,12 @@ NETWORK_loop_H(void *)
   p = net_read (&cn, &n);
   if (strncmp(p, "Loged in", 8) != 0)
     {
-      SAFE_CALL(cw_write_char (&cw, " ? failed to login - exiting"));
+      SAFE_CW_WRITE(cw_write_char (&cw, " ? failed to login - exiting"));
       return -1;
     }
   else
     {
-      SAFE_CALL(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
+      SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
       state = Logedin;
       cw_set_name (&inpw, opt.username);
     }
@@ -198,7 +198,7 @@ NETWORK_loop_H(void *)
 
   // begin to select chat to join
   net_write (&cn, CHAT_SELECT, NULL, 0);
-  SAFE_CALL(cw_write_char (&cw, " * type chatID to join..."));
+  SAFE_CW_WRITE(cw_write_char (&cw, " * type chatID to join..."));
   
   while (1)
     {
@@ -208,11 +208,11 @@ NETWORK_loop_H(void *)
       else if (n>4 && strncmp (p+n-4, "EOF", 3) == 0) 
         {
           p[n-4] = '\0';
-          SAFE_CALL(cw_write_char (&cw, p));
+          SAFE_CW_WRITE(cw_write_char (&cw, p));
           break;
         }
       else
-        SAFE_CALL(cw_write_char (&cw, p));
+        SAFE_CW_WRITE(cw_write_char (&cw, p));
     }
 
   while (state != Joined) {};
@@ -220,7 +220,7 @@ NETWORK_loop_H(void *)
     {
       // text message
       p = net_read (&cn, &n);
-      SAFE_CALL(cw_write_char_mess (&cw, p));
+      SAFE_CW_WRITE(cw_write_char_mess (&cw, p));
     }
 
   net_end (&cn);
