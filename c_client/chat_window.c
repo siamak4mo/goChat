@@ -60,6 +60,7 @@ init_chat_window(chatw *cw, int x, int y)
     {
       cw->padding = 1;
       cw->name = malloc (NAME_MAXLEN(cw->col));
+      cw->name[0] = '\0';
     }
   else cw->padding = 0;
   
