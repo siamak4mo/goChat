@@ -137,7 +137,8 @@ GUI_loop_H (void *)
         }
     }
   free (buf);
-  __exit(0);
+  endwin ();
+  puts ("press Ctrl-c to exit.");
   return 0;
 }
 
@@ -358,5 +359,6 @@ main(int argc, char **argv)
   while(state != Initialized){};
   NETWORK_loop_H(NULL);
   
+  __exit(0);
   return 0;
 }
