@@ -60,15 +60,17 @@ static inline int save_config(const char *path);
 static void
 __exit(int code)
 {
+  // free ncurses mem
   endwin ();
+  // free opt memory
   if (opt.username != NULL)
     free (opt.username);
   if (opt.user_token != NULL)
     free (opt.username);
-
-  net_end (nc);
-
-  exit (0);
+  // free chat_net mem
+  net_end (&cn);
+  
+  exit (code);
 }
 
 static inline int

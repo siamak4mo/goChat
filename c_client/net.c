@@ -21,7 +21,7 @@ net_malloc(struct net_buf *netb)
 static inline void
 net_free(struct net_buf *netb)
 {
-  if (netb->nuf != NULL && net->cap > 0)
+  if (netb->buf != NULL && netb->cap > 0)
     {
       free (netb->buf);
       netb->cap = -1;
