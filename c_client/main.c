@@ -299,9 +299,15 @@ get_arg(const char *flag, char *arg)
   else if (!strcmp (flag, "-p") || !strcmp (flag, "--port"))
     opt.server_port = atoi (arg);
   else if (!strcmp (flag, "-u") || !strcmp (flag, "--username"))
-    opt.username = arg;
+    {
+      opt.username = malloc (strlen (arg));
+      strcpy (opt.username, arg);
+    }
   else if (!strcmp (flag, "-t") || !strcmp (flag, "--token"))
-    opt.user_token = arg;
+    {
+      opt.user_token = malloc (strlen (arg));
+      strcpy (opt.user_token, arg);
+    }
   else if (!strcmp (flag, "-c") || !strcmp (flag, "--config"))
     return load_config_from_file (arg);
   else
