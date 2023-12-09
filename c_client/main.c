@@ -58,7 +58,7 @@ static inline int load_config_from_file(const char *path);
 static inline int save_config(const char *path);
 
 static void
-__exit(int code)
+__exit()
 {
   // free ncurses mem
   endwin ();
@@ -69,11 +69,9 @@ __exit(int code)
   if (opt.username != NULL)
     free (opt.username);
   if (opt.user_token != NULL)
-    free (opt.username);
+    free (opt.user_token);
   // free chat_net mem
   net_end (&cn);
-  
-  exit (code);
 }
 
 static inline int
@@ -137,8 +135,6 @@ GUI_loop_H (void *)
         }
     }
   free (buf);
-  endwin ();
-  puts ("press Ctrl-c to exit.");
   return 0;
 }
 
@@ -149,6 +145,7 @@ NETWORK_loop_H(void *)
   char *p;
   cn = net_new ();
 
+  while (state != Initialized) {};
   // init connection to the server
   if (strlen (opt.server_addr) == 0 ||
     net_init (&cn, opt.server_addr, opt.server_port) != 0)
@@ -354,11 +351,11 @@ main(int argc, char **argv)
     }
   
   thrd_t t;
-  thrd_create (&t, GUI_loop_H, NULL);
+  thrd_create (&t, NETWORK_loop_H, NULL);
+  GUI_loop_H (NULL);
 
-  while(state != Initialized){};
-  NETWORK_loop_H(NULL);
+  thrd_detach (t);
+  __exit ();
   
-  __exit(0);
   return 0;
 }
