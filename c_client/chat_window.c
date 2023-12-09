@@ -5,6 +5,7 @@
 
 #define NL 3
 #define NPAD 2
+#define NAME_MAXLEN(col) ((col)/NL - NL)
 
 chatw
 mk_chatw(int row, int col, bool boxed)
@@ -13,26 +14,23 @@ mk_chatw(int row, int col, bool boxed)
                  .col=col, .box=boxed, .w=NULL};
 }
 
-static inline void
-set_name(chatw *cw)
+void
+cw_set_name(chatw *cw, const char *name)
 {
-  if (cw->name == NULL ||
-      strlen (cw->name) == 0 || (cw->col)/3 < 6)
+  int ml = NAME_MAXLEN(cw->col);
+  if (cw->name == NULL || ml < 3)
     return;
-  
-  size_t maxlen = (cw->col)/NL - NL;
-  if (strlen (cw->name) <= maxlen)
-    mvwprintw (cw->w, 0, NPAD, cw->name);
-  else
+
+  int i;
+  for (i = 0; (i < ml - 3) && (name[i] != '\0'); ++i)
+    (cw->name)[i] = name[i];
+
+  if (i >= ml - 3 && name[i] != '\0')
     {
-      char *name_cpy = malloc (maxlen + NL);
-      strncpy (name_cpy, cw->name, maxlen);
-      memset (name_cpy + maxlen, '.', NL - 1);
-      name_cpy[maxlen + NL - 1]='\0';
-      
-      mvwprintw (cw->w, 0, NPAD, name_cpy);
-      free (name_cpy);
+      (cw->name)[i++] = '.';
+      (cw->name)[i++] = '.';
     }
+  (cw->name)[i] = '\0';
 }
 
 static inline void
@@ -40,7 +38,7 @@ redrawbox(chatw *cw)
 {
   werase (cw->w);
   box (cw->w, 0, 0);
-  set_name (cw);
+  mvwprintw (cw->w, 0, NPAD, cw->name);
   wrefresh (cw->w);
 }
 
@@ -59,7 +57,10 @@ void
 init_chat_window(chatw *cw, int x, int y)
 {
   if (cw->box)
-    cw->padding = 1;
+    {
+      cw->padding = 1;
+      cw->name = malloc (NAME_MAXLEN(cw->col));
+    }
   else cw->padding = 0;
   
   cw->w = newwin (cw->row, cw->col, x,y);
@@ -269,7 +270,7 @@ reset_read(chatw *cw)
   if (cw->box)
     {
       box (cw->w, 0, 0);
-      set_name (cw);
+      mvwprintw (cw->w, 0, NPAD, cw->name);
     }
   wrefresh (cw->w);
 }
