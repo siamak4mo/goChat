@@ -2,3 +2,5 @@
 *.o
 gochat_server.json
 TODO
+TAGS
+tags
