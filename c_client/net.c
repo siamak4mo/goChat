@@ -44,7 +44,8 @@ net_new()
     .sfd=INVALID_SOCKET,
     .retry2conn=4,
     .rbuf=netb_R,
-    .wbuf=netb_W
+    .wbuf=netb_W,
+    .state=Unestablished
   };
 
   return cn;
@@ -71,12 +72,14 @@ net_init(chat_net *cn, const char *addr, int port)
         {
           net_malloc (&(cn->rbuf));
           net_malloc (&(cn->wbuf));
+          cn->state = Connected;
           return 0;
         }
       else
         sleep (1);
     }  
 
+  cn->state = Disconnected;
   return -1;
 }
 
@@ -109,6 +112,9 @@ net_write(chat_net *cn, Packet type,
 {
   char *buf;
 
+  if (cn->state != Connected)
+    return -1;
+  
   buf = (cn->wbuf).buf;
   set_packet_type (buf, type);
 
@@ -119,7 +125,10 @@ net_write(chat_net *cn, Packet type,
     memcpy (buf + PAC_PAD, body, len);
   buf[len + PAC_PAD] = '\n';
   
-  return write (cn->sfd, buf, len + PAC_PAD + 1);
+  ssize_t res = write (cn->sfd, buf, len + PAC_PAD + 1);
+  if (res < 0)
+    cn->state = Disconnected;
+  return res;
 }
 
 int
@@ -129,6 +138,9 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
   char *p;
   int len = 0;
 
+  if (cn->state != Connected)
+    return -1;
+  
   buf = (cn->wbuf).buf;
   set_packet_type (buf, type);
 
@@ -140,14 +152,29 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
     }
   buf[len + PAC_PAD] = '\n';
   
-  return write (cn->sfd, buf, len + PAC_PAD + 1);
+  ssize_t res = write (cn->sfd, buf, len + PAC_PAD + 1);
+  if (res < 0)
+    cn->state = Disconnected;
+  return res;
 }
 
 char *
 net_read(chat_net *cn, int *len)
 {
-  char *buf = (cn->rbuf).buf;
-  int _r = read (cn->sfd, buf, (cn->rbuf).cap);
+  char *buf;
+  
+  if (cn->state != Connected)
+    return "not conected";
+  
+  buf = (cn->rbuf).buf;
+  ssize_t _r = read (cn->sfd, buf, (cn->rbuf).cap);
+  if (_r < 0)
+    {
+      cn->state = Disconnected;
+      if (len != NULL)
+        *len = _r;
+      return "network fault -- disconnected";
+    }
   
   buf[_r] = 0;
   if (_r > 0)

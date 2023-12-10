@@ -2,6 +2,12 @@
 #define NET__H__
 #include "utils.h"
 
+enum Nstate {
+  Unestablished = 1,
+  Connected,
+  Disconnected
+};
+
 typedef enum {
   SIGNUP = 1,
   LOGIN_OUT,
@@ -19,6 +25,7 @@ typedef struct {
   int sfd; // socket file descriptor
   int retry2conn; // max retry to reconnect to the server
   struct net_buf rbuf, wbuf;
+  enum Nstate state;
 } chat_net;
 
 chat_net net_new();
