@@ -103,7 +103,8 @@ GUI_loop_H (void *)
   wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
   memset (buf, 0, MAX_BUF*sizeof(wchar_t));
 
-  while (1)
+  while (cn.state != Connected) {};
+  while (cn.state == Connected)
     {
       cw_read (&inpw, buf, MAX_BUF);
       if (buf[0]=='\0')
@@ -117,7 +118,7 @@ GUI_loop_H (void *)
           const char *p = net_read (&cn, NULL);
           if (strncmp (p, "Chat doesn't exist", 18) == 0)
             SAFE_CW_WRITE(cw_write_char (&cw, " ? chat not found - try again"));
-          else
+          else if (strlen (p) != 0)
             {
               isJoined = true;
               cw_clear (&cw);
@@ -130,7 +131,6 @@ GUI_loop_H (void *)
       else if (state == Joined)
         { // send text packet
           net_wwrite (&cn, TEXT, buf);
-          
           SAFE_CW_WRITE(cw_write_my_mess(&cw, buf));
         }
     }
@@ -200,7 +200,7 @@ NETWORK_loop_H(void *)
   net_write (&cn, CHAT_SELECT, NULL, 0);
   SAFE_CW_WRITE(cw_write_char (&cw, " * type chatID to join..."));
   
-  while (1)
+  while (cn.state == Connected)
     {
       p = net_read (&cn, &n);
       if (strncmp (p, "EOF", 3) == 0)
@@ -216,11 +216,11 @@ NETWORK_loop_H(void *)
     }
 
   while (state != Joined) {};
-  while(1)
-    {
-      // text message
+  while(cn.state == Connected)
+    { // text message
       p = net_read (&cn, &n);
-      SAFE_CW_WRITE(cw_write_char_mess (&cw, p));
+      if (strlen (p) != 0)
+        SAFE_CW_WRITE(cw_write_char_mess (&cw, p));
     }
 
   net_end (&cn);
