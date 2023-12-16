@@ -23,3 +23,9 @@ test_server:
 .PHONY: build_client
 build_client:
 	$(MAKE) -C $(CLIENT_SRC)
+
+.PHONY: clean
+clean:
+	$(MAKE) -C $(CLIENT_SRC) clean
+	rm server.bin
+	rm gochat_server.json
