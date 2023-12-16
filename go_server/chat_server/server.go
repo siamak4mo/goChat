@@ -154,7 +154,7 @@ func (s *Server) Serve() error {
 	}
 
 	s.Listener = ln
-	s.Log.Printf("Listening on %s\n", s.Conf.Server.Addr)
+	s.Log.Pprintf("Listening on %s\n", s.Conf.Server.Addr)
 
 	for i, name := range s.Conf.Server.Chats {
 		s.AddNewChat(name, s.Conf.Server.ChatMOTD[i])
