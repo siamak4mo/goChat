@@ -63,7 +63,7 @@ func NewAdminServer(server *server.Server) *AdminServer {
 	}
 	h["/users/stat"] = AdminHandler{
 		HandlerFunc: user_stat,
-		Info:        "show loged in users",
+		Info:        "show logged in users",
 		Method:      "GET - no param",
 	}
 	h["/config/lookup"] = AdminHandler{

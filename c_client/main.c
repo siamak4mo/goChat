@@ -36,7 +36,7 @@ typedef enum {
   Uninitialized = 1,
   Initialized,
   Signedup,
-  Logedin,
+  Loggedin,
   Joined
 } Cstate;
 static Cstate state = Uninitialized;
@@ -112,7 +112,7 @@ GUI_loop_H (void *)
       if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
         break;
       
-      if (state == Logedin)
+      if (state == Loggedin)
         { // send chat select packet
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
@@ -181,7 +181,7 @@ NETWORK_loop_H(void *)
   // begin to login
   net_write (&cn, LOGIN_OUT, opt.user_token, strlen (opt.user_token));
   p = net_read (&cn, &n);
-  if (strncmp(p, "Loged in", 8) != 0)
+  if (strncmp(p, "Logged in", 8) != 0)
     {
       SAFE_CW_WRITE(cw_write_char (&cw, " ? failed to login - exiting"));
       return -1;
@@ -189,7 +189,7 @@ NETWORK_loop_H(void *)
   else
     {
       SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
-      state = Logedin;
+      state = Loggedin;
       cw_set_name (&inpw, opt.username);
     }
 

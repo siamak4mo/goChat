@@ -210,11 +210,11 @@ func (s *Server) handle_clients() {
 				p.User = u
 				if !s.username_exist(u.Username) {
 					s.Clients[p.RemoteAddr()] = &p
-					s.Log.Debugf("%s loged in\n", u.Username)
-					p.Swrite("Loged in\n", s)
+					s.Log.Debugf("%s logged in\n", u.Username)
+					p.Swrite("Logged in\n", s)
 
 				} else {
-					p.Swrite("Already Loged in\n", s)
+					p.Swrite("Already Logged in\n", s)
 				}
 			} else {
 				s.Log.Infof("LOGIN FAILED\n")
@@ -226,7 +226,7 @@ func (s *Server) handle_clients() {
 		case P_select_chat:
 			p_login := s.Clients[p.RemoteAddr()]
 			if p_login == nil {
-				p.Swrite("you are not loged in\n", s)
+				p.Swrite("you are not logged in\n", s)
 				go s.client_registry(p.Conn)
 				break
 			}
@@ -283,15 +283,15 @@ func (s *Server) handle_clients() {
 			_u := &User_t{}
 			if p.User != nil {
 				_u = p.User
-				s.Log.Debugf("%s loged out\n", _u.Username)
-				p.Swrite("Loged out\n", s)
+				s.Log.Debugf("%s logged out\n", _u.Username)
+				p.Swrite("Logged out\n", s)
 			} else {
 				if s.Clients[p.Payload] != nil {
 					_u = s.Clients[p.Payload].User
-					s.Log.Debugf("%s loged out\n", _u.Username)
-					p.Swrite("Loged out\n", s)
+					s.Log.Debugf("%s logged out\n", _u.Username)
+					p.Swrite("Logged out\n", s)
 				} else {
-					p.Swrite("you are not loged in\n", s)
+					p.Swrite("you are not logged in\n", s)
 				}
 			}
 
@@ -483,7 +483,7 @@ func username_isvalid(name string) bool {
 	return true
 }
 
-// check username exists in loged in clients
+// check username exists in logged in clients
 func (s *Server) username_exist(uname string) bool {
 	if len(uname) == 0 {
 		return true // to prevent null user addition
