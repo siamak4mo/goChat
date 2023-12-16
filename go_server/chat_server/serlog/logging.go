@@ -90,3 +90,8 @@ func (l Log) Panicf(format string, fun func(), args ...any) {
 func (l Log) Printf(format string, args ...any) {
 	fmt.Printf(format, args...)
 }
+
+func (l Log) Pprintf(format string, args ...any) {
+	fmt.Printf("%s| ", l.Module)
+	fmt.Printf(format, args...)
+}
