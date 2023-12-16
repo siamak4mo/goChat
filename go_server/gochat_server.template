@@ -1,25 +1,25 @@
 {
     "Server": {
-        "listen_addr": "127.0.0.1:7070",
+        "listen_addr": "127.0.0.1:8080",
         "room_names": [
             "EcHo",
             "HCK"
         ],
         "room_motds": [
             "Welcome to the `Echo` chat!",
-            "Welcome to the Hack chat  :D"
+            "Welcome to the Hack chat :D"
         ]
     },
     "Token": {
         "token_delim": ".",
-        "token_private_key": "mY s3kret k3Y",
+        "token_private_key": "MyseCretvAlue",
         "token_bearer": "Bearer",
-        "token_hash_algorithm": "sha1"
+        "token_hash_algorithm": "sha256"
     },
     "Log":{
-        "log_level": 2
+        "log_level": 0
     },
     "Admin":{
-        "admin_addr": "127.0.0.1:7071"
+        "admin_addr": "127.0.0.1:8081"
     }
 }
