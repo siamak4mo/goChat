@@ -84,70 +84,35 @@ got_enough_space()
   else return 1;
 }
 
-static inline int
-GUI_loop_H (void *)
-{
-  // make chat and input windows
-  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
-  inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
-
-  // init ncurses
-  initscr ();
-  // initialize cw at (0, 0)
-  init_chat_window(&cw, 0, 0);
-  // initialize cw at (cw.x + 1, 0)
-  init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
-  // end of GUI initialization
-  state = Initialized;
-
-  wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
-  memset (buf, 0, MAX_BUF*sizeof(wchar_t));
-
-  while (cn.state != Connected) {};
-  while (cn.state == Connected)
-    {
-      cw_read (&inpw, buf, MAX_BUF);
-      if (buf[0]=='\0')
-        continue;
-      if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
-        break;
-      
-      if (state == Loggedin)
-        { // send chat select packet
-          net_wwrite (&cn, CHAT_SELECT, buf);
-          const char *p = net_read (&cn, NULL);
-          if (strncmp (p, "Chat doesn't exist", 18) == 0)
-            SAFE_CW_WRITE(cw_write_char (&cw, " ? chat not found - try again"));
-          else if (strlen (p) != 0)
-            {
-              isJoined = true;
-              cw_clear (&cw);
-              SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
-              state = Joined;
-              wcharcpy(chatID, buf);
-              cw_set_name (&cw, chatID);
-            }
-        }
-      else if (state == Joined)
-        { // send text packet
-          net_wwrite (&cn, TEXT, buf);
-          SAFE_CW_WRITE(cw_write_my_mess(&cw, buf));
-        }
-    }
-  free (buf);
-  return 0;
-}
-
-static inline int
-NETWORK_loop_H(void *)
+static inline void
+select_chat()
 {
   int n;
   char *p;
-  cn = net_new ();
+  // begin to select chat to join
+  net_write (&cn, CHAT_SELECT, NULL, 0);
+  SAFE_CW_WRITE(cw_write_char (&cw, " * type chatID to join..."));
+  
+  while (cn.state == Connected)
+    {
+      p = net_read (&cn, &n);
+      if (strncmp (p, "EOF", 3) == 0)
+        break;
+      else if (n>4 && strncmp (p+n-4, "EOF", 3) == 0) 
+        {
+          p[n-4] = '\0';
+          SAFE_CW_WRITE(cw_write_char (&cw, p));
+          break;
+        }
+      else
+        SAFE_CW_WRITE(cw_write_char (&cw, p));
+    }
+}
 
-  while (state != Initialized) {};
-  // init connection to the server
-  if (strlen (opt.server_addr) == 0 ||
+static inline int
+connect_to_server()
+{
+ if (strlen (opt.server_addr) == 0 ||
     net_init (&cn, opt.server_addr, opt.server_port) != 0)
     {
       SAFE_CW_WRITE(cw_write_char (&cw, " ? could not connect to the server - exiting"));
@@ -156,6 +121,15 @@ NETWORK_loop_H(void *)
   SAFE_CW_WRITE(cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
+  return 0;
+}
+
+static inline int
+try_to_login()
+{
+  int n;
+  char *p;
+  
   if (opt.user_token == NULL || strlen (opt.user_token) == 0)
     { // to signup
       if (opt.username == NULL || strlen (opt.username) == 0)
@@ -209,29 +183,82 @@ NETWORK_loop_H(void *)
         }
       cw_set_name (&inpw, opt.username);
     }
+  return 0;
+}
 
+static inline int
+MAIN_loop_H (void *)
+{
+  int err;
+  // make chat and input windows
+  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
+  inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
+  // init ncurses
+  initscr ();
+  // initialize cw at (0, 0)
+  init_chat_window(&cw, 0, 0);
+  // initialize cw at (cw.x + 1, 0)
+  init_chat_window(&inpw, w.ws_row-INP_W_LEN, 0);
+  // end of GUI initialization
+  state = Initialized;
+  cn = net_new ();
+  // init connection to the server
+  err = connect_to_server ();
+  if (err != 0)
+    return err;
+  // try to login
+  err = try_to_login ();
+  if (err != 0)
+    return err;
   // save configuration to the default path
   save_config (default_config_path);
-
-  // begin to select chat to join
-  net_write (&cn, CHAT_SELECT, NULL, 0);
-  SAFE_CW_WRITE(cw_write_char (&cw, " * type chatID to join..."));
+  // print chat rooms and ask user to select one
+  select_chat ();
   
+  wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
+  memset (buf, 0, MAX_BUF*sizeof(wchar_t));
+  
+  while (cn.state != Connected) {};
   while (cn.state == Connected)
     {
-      p = net_read (&cn, &n);
-      if (strncmp (p, "EOF", 3) == 0)
+      cw_read (&inpw, buf, MAX_BUF);
+      if (buf[0]=='\0')
+        continue;
+      if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
         break;
-      else if (n>4 && strncmp (p+n-4, "EOF", 3) == 0) 
-        {
-          p[n-4] = '\0';
-          SAFE_CW_WRITE(cw_write_char (&cw, p));
-          break;
+      
+      if (state == Loggedin)
+        { // send chat select packet
+          net_wwrite (&cn, CHAT_SELECT, buf);
+          const char *p = net_read (&cn, NULL);
+          if (strncmp (p, "Chat doesn't exist", 18) == 0)
+            SAFE_CW_WRITE(cw_write_char (&cw, " ? chat not found - try again"));
+          else if (strlen (p) != 0)
+            {
+              isJoined = true;
+              cw_clear (&cw);
+              SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
+              state = Joined;
+              wcharcpy(chatID, buf);
+              cw_set_name (&cw, chatID);
+            }
         }
-      else
-        SAFE_CW_WRITE(cw_write_char (&cw, p));
+      else if (state == Joined)
+        { // send text packet
+          net_wwrite (&cn, TEXT, buf);
+          SAFE_CW_WRITE(cw_write_my_mess(&cw, buf));
+        }
     }
+  free (buf);
+  return 0;
+}
 
+static inline int
+READCHAT_loop_H(void *)
+{
+  int n;
+  char *p;
+  
   while (state != Joined) {};
   while(cn.state == Connected)
     { // text message
@@ -368,8 +395,8 @@ main(int argc, char **argv)
     }
   
   thrd_t t;
-  thrd_create (&t, NETWORK_loop_H, NULL);
-  GUI_loop_H (NULL);
+  thrd_create (&t, READCHAT_loop_H, NULL);
+  MAIN_loop_H (NULL);
 
   thrd_detach (t);
   __exit ();
