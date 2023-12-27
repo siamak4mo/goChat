@@ -248,7 +248,8 @@ MAIN_loop_H (void *)
         }
       else
         { // send text packet
-          net_wwrite (&cn, TEXT, buf);
+          if (net_wwrite (&cn, TEXT, buf) <= 0)
+            RET_ERR("Network Fault -- exiting.", -1);
           SAFE_CW_WRITE(cw_write_my_mess(&cw, buf));
         }
     }
@@ -266,6 +267,8 @@ READCHAT_loop_H(void *)
   while(cn.state == Connected)
     { // text message
       p = net_read (&cn, &n);
+      if (p == NULL)
+        RET_ERR("Network Fault -- exiting.", -1);
       if (strlen (p) != 0)
         SAFE_CW_WRITE(cw_write_char_mess (&cw, p));
     }

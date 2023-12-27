@@ -168,12 +168,12 @@ net_read(chat_net *cn, int *len)
   
   buf = (cn->rbuf).buf;
   ssize_t _r = read (cn->sfd, buf, (cn->rbuf).cap);
-  if (_r < 0)
+  if (_r <= 0)
     {
       cn->state = Disconnected;
       if (len != NULL)
         *len = _r;
-      return "network fault -- disconnected";
+      return NULL;
     }
   
   buf[_r] = 0;
