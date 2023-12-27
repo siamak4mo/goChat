@@ -42,6 +42,7 @@ typedef enum {
 static Cstate state = Uninitialized;
 static bool cw_lock = false;
 
+#define RET_ERR(msg, code) do { ERR_MSG = (msg); return code; } while (0)
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
 #define SAFE_CW_WRITE(fun_call) do {            \
@@ -96,10 +97,7 @@ got_enough_space()
   if (w.ws_row < MIN_W_LEN || w.ws_col < MIN_W_LEN)
     return 0;
   else
-    {
-      ERR_MSG = "terminal is too small -- exiting.";
-      return 1;
-    }
+    RET_ERR("terminal is too small -- exiting.", 1);
 }
 
 static inline void
@@ -130,12 +128,9 @@ select_chat()
 static inline int
 connect_to_server()
 {
- if (strlen (opt.server_addr) == 0 ||
-    net_init (&cn, opt.server_addr, opt.server_port) != 0)
-    {
-      ERR_MSG = "Could not connect to the server - exiting";
-      return -1;
-    }
+  if (strlen (opt.server_addr) == 0 ||
+      net_init (&cn, opt.server_addr, opt.server_port) != 0)
+    RET_ERR("Could not connect to the server - exiting", -1);
   SAFE_CW_WRITE(cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
@@ -151,19 +146,15 @@ try_to_login()
   if (opt.user_token == NULL || strlen (opt.user_token) == 0)
     { // to signup
       if (opt.username == NULL || strlen (opt.username) == 0)
-        {
-          ERR_MSG = "Either a token or username is required -- exiting";
-          return -1;
-        }
+        RET_ERR("Either a token or username is required -- exiting", -1);
       net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
       p = net_read (&cn, &n);
       if (strncmp (p, "Token: ", 7) != 0)
         {
           if (strncmp (p, "User Already exists", 19) == 0)
-            ERR_MSG = "Failed to signup, user already exists -- exiting";
+            RET_ERR("Failed to signup, user already exists -- exiting", -1);
           else
-            ERR_MSG = "Failed to signup -- exiting";
-          return -1;
+            RET_ERR("Failed to signup -- exiting", -1);
         }
       else
         {
@@ -176,10 +167,7 @@ try_to_login()
   net_write (&cn, LOGIN_OUT, opt.user_token, strlen (opt.user_token));
   p = net_read (&cn, &n);
   if (strncmp(p, "Logged in", 8) != 0)
-    {
-      ERR_MSG = "Failed to login, token is not valid -- exiting";
-      return -1;
-    }
+    RET_ERR("Failed to login, token is not valid -- exiting", -1);
   else
     {
       SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
@@ -297,10 +285,7 @@ load_config_from_file(const char *path)
     f = fopen (path, "r");
   
   if (f==NULL)
-    {
-      ERR_MSG = "Could not open config file -- exiting.";
-      return -1;
-    }
+    RET_ERR("Could not open config file -- exiting.", -1);
   
   char *key = malloc (32);
   char *val = malloc (128);
@@ -309,10 +294,7 @@ load_config_from_file(const char *path)
     {
       r = fscanf(f, "%32[^ ] %128[^\n]%*c", key, val);
       if (r < 0)
-        {
-          ERR_MSG = "Could not read the config file -- exiting.";
-          return -1;
-        }
+        RET_ERR("Could not read the config file -- exiting.", -1);
       if (!strcmp (key, "server_addr"))
         strcpy (opt.server_addr, val);
       else if (!strcmp (key, "server_port"))
@@ -328,10 +310,7 @@ load_config_from_file(const char *path)
           strcpy (opt.user_token, val);
         }
       else
-        {
-          ERR_MSG = "Parsing config file failed -- exiting.";
-          return -1;
-        }
+        RET_ERR("Parsing config file failed -- exiting.", -1);
     }
   
   free (key);
@@ -379,10 +358,7 @@ get_arg(const char *flag, char *arg)
         return 1;
     }
   else
-    {
-      ERR_MSG = "unknown argument -- exiting.";
-      return 1;
-    }
+    RET_ERR("unknown argument -- exiting.", 1);
   return 0;
 }
 
@@ -394,10 +370,7 @@ pars_args(int argc, char **argv)
       if (!opt.EOO && argv[0][0] == '-')
         {
           if (argc == 1)
-            {
-              ERR_MSG = "Invalid option value -- exiting.";
-              return -1;
-            }
+            RET_ERR("Invalid option value -- exiting.", -1);
           if (get_arg (*argv, *(argv+1)) != 0)
             return -1;
           if (get_arg (*argv, *(argv+1)) != 0)
@@ -415,20 +388,11 @@ static inline int
 check_opts()
 {
   if (strlen (opt.server_addr) == 0)
-    {
-      ERR_MSG = "Invalid server IP address -- exiting.";
-      return -1;
-    }
+    RET_ERR("Invalid server IP address -- exiting.", -1);
   if (opt.server_port <= 0 || opt.server_port > (2<<16))
-    {
-      ERR_MSG = "Invalid server port number -- exiting.";
-      return -1;
-    }
+    RET_ERR("Invalid server port number -- exiting.", -1);
   if (opt.username == NULL && opt.user_token == NULL)
-    {
-      ERR_MSG = "Either a token or username is required -- exiting";
-      return -1;
-    }
+    RET_ERR("Either a token or username is required -- exiting", -1);
 
   return 0;
 }
