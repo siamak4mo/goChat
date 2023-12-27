@@ -24,7 +24,11 @@ Chat Server | 1702716993 [INFO] chat 48434bda39a3ee5e added
 
 connecting to the server using the netcat program:
 $ nc localhost 8080
-S myname                          # to sign up as myname
+# at first you need to sign-up and get a token (if you don't have a token)
+# only usernames with NT_xxx pattern are allowed (NT: Not Trusted)
+# to sign-up as a trusted user you need to get token from admin
+# see `admin server` for more information
+S NT_myname                       # to sign up as NT_myname
 Token: bXluYW1l.95a2794a6...      # your token
 
 then you can log in using this token:
@@ -72,6 +76,11 @@ $ curl localhost:8081 | jq
 }
 
 there is a brief documentation of the API in the `Routes` section
+
+* to register new user:
+$ curl 127.0.0.1:8081/register -XPOST -d '{"username": "_-_nobody_-_"}'
+Token: Y2hhdCBuYW1l.xxx
+then you can give these tokens to your users
 
 * to see the current chat_server configuration:
 $ curl 127.0.0.1:8081/config/lookup | jq
