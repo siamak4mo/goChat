@@ -143,6 +143,16 @@ func (s *Server) RemoveChat(key string) {
 	delete(s.Chats, key)
 }
 
+func (s *Server) RegisterUser(name string) string {
+	tk := stoken.New(s.Conf)
+	tk.Username = []byte(name)
+	tk.MkToken()
+
+	s.Log.Infof("%s registered\n", tk.Signature[0:16])
+
+	return tk.Token
+}
+
 func (s *Server) Serve() error {
 	s.Log = serlog.New(*s.Conf, "Chat Server ")
 	ln, err := net.Listen("tcp", s.Conf.Server.Addr)
@@ -266,13 +276,17 @@ func (s *Server) handle_clients() {
 					p.Conn.Close()
 				}()
 			} else {
+				// in this level we only make not trusted users
+				// so they must begin  with `NT_`
+				if len(p.Payload) < 3 ||
+					strings.Compare(p.Payload[0:3], "NT_") != 0 {
+					p.Swrite("Invalid username, only `NT_username` is allowed\n", s)
+					p.Conn.Close()
+					break
+				}
 				if !s.username_exist(p.Payload) {
-					tk := stoken.New(s.Conf)
-					tk.Username = []byte(p.Payload)
-					tk.MkToken()
-
-					p.Swrite("Token: "+tk.Token+"\n", s)
-					s.Log.Infof("%s registered\n", tk.Signature[0:16])
+					user_token := s.RegisterUser(p.Payload)
+					p.Swrite("Token: "+user_token+"\n", s)
 				} else {
 					p.Swrite("User Already exists\n", s)
 				}
