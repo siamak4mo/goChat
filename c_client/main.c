@@ -393,6 +393,11 @@ pars_args(int argc, char **argv)
     {
       if (!opt.EOO && argv[0][0] == '-')
         {
+          if (argc == 1)
+            {
+              ERR_MSG = "Invalid option value -- exiting.";
+              return -1;
+            }
           if (get_arg (*argv, *(argv+1)) != 0)
             return -1;
           if (get_arg (*argv, *(argv+1)) != 0)
@@ -403,6 +408,28 @@ pars_args(int argc, char **argv)
           // dash-dash prefixed
         }
     }
+  return 0;
+}
+
+static inline int
+check_opts()
+{
+  if (strlen (opt.server_addr) == 0)
+    {
+      ERR_MSG = "Invalid server IP address -- exiting.";
+      return -1;
+    }
+  if (opt.server_port <= 0 || opt.server_port > (2<<16))
+    {
+      ERR_MSG = "Invalid server port number -- exiting.";
+      return -1;
+    }
+  if (opt.username == NULL && opt.user_token == NULL)
+    {
+      ERR_MSG = "Either a token or username is required -- exiting";
+      return -1;
+    }
+
   return 0;
 }
 
@@ -419,6 +446,13 @@ main(int argc, char **argv)
     {
       puts (ERR_MSG);
       Usage ();
+      return 1;
+    }
+
+  // check opt
+  if (check_opts () != 0)
+    {
+      puts (ERR_MSG);
       return 1;
     }
   
