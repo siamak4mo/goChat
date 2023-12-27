@@ -42,6 +42,12 @@ func NewAdminServer(server *server.Server) *AdminServer {
 		Info:        "root page",
 		Method:      "GET - no param",
 	}
+	h["/register"] = AdminHandler{
+		HandlerFunc: reg_new_user,
+		Info:        "register new user",
+		Method:      "POST - username to sign up",
+	}
+
 	h["/chats/stat"] = AdminHandler{
 		HandlerFunc: chat_stat,
 		Info:        "statistics of chats",
@@ -203,6 +209,22 @@ func chat_add(w http.ResponseWriter, r *http.Request) {
 				chat_s.AddNewChat(data.Name, data.MOTD)
 				w.Write([]byte("Added\n"))
 			}
+		}
+	}
+}
+func reg_new_user(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		dec := json.NewDecoder(r.Body)
+		data := struct {
+			Name string `json:"username"`
+		}{}
+		err := dec.Decode(&data)
+
+		if err == nil {
+			user_token := chat_s.RegisterUser(data.Name)
+			w.Write([]byte("Token: " + user_token + "\n"))
+		}else{
+			w.Write([]byte("ops\n" + err.Error()))
 		}
 	}
 }
