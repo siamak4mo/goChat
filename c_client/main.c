@@ -40,16 +40,20 @@ typedef enum {
   Joined
 } Cstate;
 static Cstate state = Uninitialized;
+static bool cw_lock = false;
 
 #define ERR_LOAD_CONFIG -1
 #define ERR_UNKNOWN_ARG 1
 
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
-#define SAFE_CW_WRITE(fun_call) do {                \
+#define SAFE_CW_WRITE(fun_call) do {            \
+    while (cw_lock) {};                         \
+    cw_lock = true;                             \
     ST_CURSOR();                                \
     fun_call;                                   \
     LD_CURSOR();                                \
+    cw_lock = false;                            \
     wrefresh (inpw.w);         } while (0)
 
 // config file handling
