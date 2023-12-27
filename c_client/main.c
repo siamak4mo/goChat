@@ -218,7 +218,6 @@ MAIN_loop_H (void *)
   wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
   memset (buf, 0, MAX_BUF*sizeof(wchar_t));
   
-  while (cn.state != Connected) {};
   while (cn.state == Connected)
     {
       cw_read (&inpw, buf, MAX_BUF);
@@ -267,7 +266,6 @@ READCHAT_loop_H(void *)
         SAFE_CW_WRITE(cw_write_char_mess (&cw, p));
     }
 
-  net_end (&cn);
   return 0; // unreachable
 }
 
