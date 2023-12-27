@@ -35,8 +35,6 @@ static struct Options opt = {
 typedef enum {
   Uninitialized = 1,
   Initialized,
-  Signedup,
-  Loggedin,
   Joined
 } Cstate;
 static Cstate state = Uninitialized;
@@ -54,7 +52,7 @@ static bool cw_lock = false;
     fun_call;                                   \
     LD_CURSOR();                                \
     cw_lock = false;                            \
-    wrefresh (inpw.w);         } while (0)
+    wrefresh (inpw.w);             } while (0)
 
 // config file handling
 static const char default_config_path[] = "/tmp/client.config";
@@ -152,7 +150,6 @@ try_to_login()
         {
           opt.user_token = malloc (n-7);
           strncpy (opt.user_token, p+7, n-7);
-          state = Signedup;
         }
     }
 
@@ -167,7 +164,6 @@ try_to_login()
   else
     {
       SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
-      state = Loggedin;
       if (opt.username == NULL)
         {
           // get the username from the server
@@ -231,7 +227,7 @@ MAIN_loop_H (void *)
       if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
         break;
       
-      if (state == Loggedin)
+      if (state != Joined)
         { // send chat select packet
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
@@ -247,7 +243,7 @@ MAIN_loop_H (void *)
               cw_set_name (&cw, chatID);
             }
         }
-      else if (state == Joined)
+      else
         { // send text packet
           net_wwrite (&cn, TEXT, buf);
           SAFE_CW_WRITE(cw_write_my_mess(&cw, buf));
