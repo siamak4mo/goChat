@@ -57,7 +57,7 @@ C 48434bda39a3ee5e                # now you joined the HCK room
    admin server
   ==============
 
-it's for monitoring the chat_server itself
+it's for monitoring and managing the chat_server itself
 by default, it's listening on localhost:8081
 
 $ curl localhost:8081 | jq
@@ -80,7 +80,7 @@ there is a brief documentation of the API in the `Routes` section
 * to register new user:
 $ curl 127.0.0.1:8081/register -XPOST -d '{"username": "_-_nobody_-_"}'
 Token: Y2hhdCBuYW1l.xxx
-then you can give these tokens to your users
+then, you can give these tokens to your users so they can log in as trusted users.
 
 * to see the current chat_server configuration:
 $ curl 127.0.0.1:8081/config/lookup | jq

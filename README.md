@@ -26,7 +26,7 @@ run `make test_server` to run tests for the server
 
 ### make token for users
 users only can login with not trusted usernames (NT_xxx names)
-unless you make trusted tokens from admin server
+unless you make trusted tokens from the admin server
 see go_server/README.txt 'admin server' section for more information
 
 ## using the client
