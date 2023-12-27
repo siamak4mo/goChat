@@ -20,6 +20,7 @@ static int rxoff, ryoff; // inpw (x,y) cursor offset
 static chat_net cn;
 static bool isJoined = false;
 static char chatID[17];
+static char *ERR_MSG;
 
 struct Options {
   char server_addr[16];
@@ -39,9 +40,6 @@ typedef enum {
 } Cstate;
 static Cstate state = Uninitialized;
 static bool cw_lock = false;
-
-#define ERR_LOAD_CONFIG -1
-#define ERR_UNKNOWN_ARG 1
 
 #define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
 #define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
@@ -83,7 +81,11 @@ got_enough_space()
 
   if (w.ws_row < MIN_W_LEN || w.ws_col < MIN_W_LEN)
     return 0;
-  else return 1;
+  else
+    {
+      ERR_MSG = "terminal is too smal -- exiting.";
+      return 1;
+    }
 }
 
 static inline void
@@ -272,7 +274,7 @@ READCHAT_loop_H(void *)
 static inline int
 load_config_from_file(const char *path)
 {
-  int res = 0;
+  int res = 0, r = 2;
   FILE *f;
 
   if (path == NULL || strlen (path) == 0)
@@ -281,13 +283,22 @@ load_config_from_file(const char *path)
     f = fopen (path, "r");
   
   if (f==NULL)
-    return ERR_LOAD_CONFIG;
+    {
+      ERR_MSG = "Could not open config file -- exiting.";
+      return -1;
+    }
   
   char *key = malloc (32);
   char *val = malloc (128);
   
-  while (fscanf(f, "%32[^ ] %128[^\n]%*c", key, val) == 2)
+  while (r == 2)
     {
+      r = fscanf(f, "%32[^ ] %128[^\n]%*c", key, val);
+      if (r < 0)
+        {
+          ERR_MSG = "Could not read the config file -- exiting.";
+          return -1;
+        }
       if (!strcmp (key, "server_addr"))
         strcpy (opt.server_addr, val);
       else if (!strcmp (key, "server_port"))
@@ -304,8 +315,8 @@ load_config_from_file(const char *path)
         }
       else
         {
-          res = ERR_LOAD_CONFIG;
-          break;
+          ERR_MSG = "parsing config file failed -- exiting.";
+          return -1;
         }
     }
   
@@ -349,9 +360,15 @@ get_arg(const char *flag, char *arg)
       strcpy (opt.user_token, arg);
     }
   else if (!strcmp (flag, "-c") || !strcmp (flag, "--config"))
-    return load_config_from_file (arg);
+    {
+      if (!load_config_from_file (arg))
+        return 1;
+    }
   else
-    return ERR_UNKNOWN_ARG;
+    {
+      ERR_MSG = "unknown argument -- exiting.";
+      return 1;
+    }
   return 0;
 }
 
@@ -362,16 +379,10 @@ pars_args(int argc, char **argv)
     {
       if (!opt.EOO && argv[0][0] == '-')
         {
-          if (get_arg (*argv, *(argv+1)) == ERR_UNKNOWN_ARG)
-            {
-              printf ("unknown argument %s\n", argv[0]);
-              return 1;
-            }
-          if (get_arg (*argv, *(argv+1)) == ERR_LOAD_CONFIG)
-            {
-              printf ("loading config from file failed\n");
-              return -1;
-            }
+          if (get_arg (*argv, *(argv+1)) != 0)
+            return -1;
+          if (get_arg (*argv, *(argv+1)) != 0)
+            return -1;
         }
       else
         {
@@ -385,19 +396,28 @@ int
 main(int argc, char **argv)
 {
   if (pars_args (argc, argv) != 0)
-    return 1;
+    {
+      puts (ERR_MSG);
+      return 1;
+    }
   if (!got_enough_space(w))
     {
-      puts ("terminal is too small");
+      puts (ERR_MSG);
       return 1;
     }
   
   thrd_t t;
-  thrd_create (&t, READCHAT_loop_H, NULL);
+  if (thrd_create (&t, READCHAT_loop_H, NULL) < 0)
+    {
+      puts ("Could not allocate thread -- exiting.");
+      return 1;
+    }
   MAIN_loop_H (NULL);
 
   thrd_detach (t);
   __exit ();
-  
+
+  if (ERR_MSG != NULL)
+    puts (ERR_MSG);
   return 0;
 }
