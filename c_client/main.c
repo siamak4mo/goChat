@@ -190,6 +190,23 @@ NETWORK_loop_H(void *)
     {
       SAFE_CW_WRITE(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
       state = Loggedin;
+      if (opt.username == NULL)
+        {
+          // get the username from the server
+          net_write (&cn, WHOAMI, NULL, 0);
+          p = net_read (&cn, &n);
+          if (n>11 && strncmp (p, "Username: ", 10) == 0)
+            {
+              int uname_len = 0;
+              while (p[uname_len] != '\0' && p[uname_len] != '\n')
+                uname_len++;
+              p[uname_len] = '\0';
+              opt.username = malloc(uname_len);
+              strncpy (opt.username, p+10, uname_len);
+            }
+          else
+            cw_set_name (&inpw, "Unknown Error");
+        }
       cw_set_name (&inpw, opt.username);
     }
 
