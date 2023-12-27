@@ -119,7 +119,7 @@ connect_to_server()
  if (strlen (opt.server_addr) == 0 ||
     net_init (&cn, opt.server_addr, opt.server_port) != 0)
     {
-      SAFE_CW_WRITE(cw_write_char (&cw, " ? could not connect to the server - exiting"));
+      ERR_MSG = "Could not connect to the server - exiting";
       return -1;
     }
   SAFE_CW_WRITE(cw_write_char (&cw, " * connected to the server"));
@@ -138,14 +138,17 @@ try_to_login()
     { // to signup
       if (opt.username == NULL || strlen (opt.username) == 0)
         {
-          SAFE_CW_WRITE(cw_write_char (&cw, " ? either a token or username is expected - exiting"));
+          ERR_MSG = "Either a token or username is required - exiting";
           return -1;
         }
       net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
       p = net_read (&cn, &n);
-      if (strncmp(p, "Token: ", 7) != 0)
+      if (strncmp (p, "Token: ", 7) != 0)
         {
-          SAFE_CW_WRITE(cw_write_char (&cw, " ? failed to signup - exiting"));
+          if (strncmp (p, "User Already exists", 19) == 0)
+            ERR_MSG = "failed to signup, user already exists -- exiting";
+          else
+            ERR_MSG = "failed to signup -- exiting";
           return -1;
         }
       else
@@ -160,7 +163,7 @@ try_to_login()
   p = net_read (&cn, &n);
   if (strncmp(p, "Logged in", 8) != 0)
     {
-      SAFE_CW_WRITE(cw_write_char (&cw, " ? failed to login - exiting"));
+      ERR_MSG = "failed to login - exiting";
       return -1;
     }
   else
@@ -191,7 +194,6 @@ try_to_login()
 static inline int
 MAIN_loop_H (void *)
 {
-  int err;
   // make chat and input windows
   cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
   inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
@@ -205,13 +207,11 @@ MAIN_loop_H (void *)
   state = Initialized;
   cn = net_new ();
   // init connection to the server
-  err = connect_to_server ();
-  if (err != 0)
-    return err;
+  if (connect_to_server () != 0)
+    return -1;
   // try to login
-  err = try_to_login ();
-  if (err != 0)
-    return err;
+  if (try_to_login () != 0)
+    return -1;
   // save configuration to the default path
   save_config (default_config_path);
   // print chat rooms and ask user to select one
