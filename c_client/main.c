@@ -83,7 +83,7 @@ got_enough_space()
     return 0;
   else
     {
-      ERR_MSG = "terminal is too smal -- exiting.";
+      ERR_MSG = "terminal is too small -- exiting.";
       return 1;
     }
 }
@@ -138,7 +138,7 @@ try_to_login()
     { // to signup
       if (opt.username == NULL || strlen (opt.username) == 0)
         {
-          ERR_MSG = "Either a token or username is required - exiting";
+          ERR_MSG = "Either a token or username is required -- exiting";
           return -1;
         }
       net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
@@ -146,9 +146,9 @@ try_to_login()
       if (strncmp (p, "Token: ", 7) != 0)
         {
           if (strncmp (p, "User Already exists", 19) == 0)
-            ERR_MSG = "failed to signup, user already exists -- exiting";
+            ERR_MSG = "Failed to signup, user already exists -- exiting";
           else
-            ERR_MSG = "failed to signup -- exiting";
+            ERR_MSG = "Failed to signup -- exiting";
           return -1;
         }
       else
@@ -163,7 +163,7 @@ try_to_login()
   p = net_read (&cn, &n);
   if (strncmp(p, "Logged in", 8) != 0)
     {
-      ERR_MSG = "failed to login - exiting";
+      ERR_MSG = "Failed to login, token is not valid -- exiting";
       return -1;
     }
   else
@@ -315,7 +315,7 @@ load_config_from_file(const char *path)
         }
       else
         {
-          ERR_MSG = "parsing config file failed -- exiting.";
+          ERR_MSG = "Parsing config file failed -- exiting.";
           return -1;
         }
     }
