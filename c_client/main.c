@@ -21,6 +21,7 @@ static chat_net cn;
 static bool isJoined = false;
 static char chatID[17];
 static char *ERR_MSG;
+static char *__progname__;
 
 struct Options {
   char server_addr[16];
@@ -72,6 +73,19 @@ __exit()
     free (opt.user_token);
   // free chat_net mem
   net_end (&cn);
+}
+
+static inline void
+Usage()
+{
+  printf ("Usage: %s [OPTIONS]\n%s", __progname__,
+          "OPTIONS:\n"
+          "   -s, --server         to specify server address\n"
+          "   -p, --port           to specify server listening port\n"
+          "   -u, --username       to specify username to sign up (as not trusted user)\n"
+          "   -t, --token          to use your having token\n"
+          "   -c, --config         to specify config file path\n"
+  );
 }
 
 static inline int
@@ -395,14 +409,16 @@ pars_args(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
-  if (pars_args (argc, argv) != 0)
+  __progname__ = argv[0];
+  if (!got_enough_space(w))
     {
       puts (ERR_MSG);
       return 1;
     }
-  if (!got_enough_space(w))
+  if (pars_args (argc, argv) != 0)
     {
       puts (ERR_MSG);
+      Usage ();
       return 1;
     }
   
