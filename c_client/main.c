@@ -95,9 +95,9 @@ got_enough_space()
   ioctl (STDOUT_FILENO, TIOCGWINSZ, &w);
 
   if (w.ws_row < MIN_W_LEN || w.ws_col < MIN_W_LEN)
-    return 0;
+    RET_ERR("terminal is too small -- exiting.", -1);
   else
-    RET_ERR("terminal is too small -- exiting.", 1);
+    return 0;
 }
 
 static inline void
@@ -404,7 +404,7 @@ int
 main(int argc, char **argv)
 {
   __progname__ = argv[0];
-  if (!got_enough_space(w))
+  if (got_enough_space(w) != 0)
     {
       puts (ERR_MSG);
       return 1;
