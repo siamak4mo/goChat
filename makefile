@@ -1,9 +1,6 @@
 SERVER_SRC = go_server
 CLIENT_SRC = c_client
 
-SERVER_BIN = server.bin
-CLIENT_BIN = client.bin
-
 all: build_server build_client
 
 deploy: build_server build_client
@@ -11,9 +8,7 @@ deploy: build_server build_client
 
 ## server ##
 .PHONY: build_server
-build_server: | $(SERVER_BIN)
-	ln -s $(SERVER_SRC)/$(SERVER_BIN) .
-$(SERVER_BIN):
+build_server:
 	$(MAKE) -C $(SERVER_SRC)
 
 .PHONY: run_server
@@ -26,9 +21,7 @@ test_server:
 
 ## client ##
 .PHONY: build_client
-build_client: | $(CLIENT_BIN)
-	ln -s $(CLIENT_SRC)/$(CLIENT_BIN) .
-$(CLIENT_BIN):
+build_client:
 	$(MAKE) -C $(CLIENT_SRC)
 
 .PHONY: clean

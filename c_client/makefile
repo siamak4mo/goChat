@@ -1,6 +1,6 @@
 CFLAGS=-g -ggdb -Wall -Wextra `pkg-config --cflags ncurses` -I.
 LDFLAGS=`pkg-config --libs ncurses`
-BUILD_OUT=client.bin
+BUILD_OUT=../client.bin
 OBJ=net.o chat_window.o
 
 
