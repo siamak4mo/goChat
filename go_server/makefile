@@ -3,7 +3,7 @@ GO_BUILD = go build $(GO_CC)
 GO_RUN = go run $(GO_CC)
 GO_TEST = go test
 
-BUILD_OUT = ../server.bin
+BUILD_OUT = server.bin
 TEST_DIR  = test
 SRC_DIR   = chat_server
 
