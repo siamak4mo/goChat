@@ -8,45 +8,48 @@ import (
 	"sync"
 )
 
-var (
+type main_controller struct {
 	chat_s  *server.Server
 	admin_s *AdminServer
-	conf    *config.Config
+	config  *config.Config
 	gwg     sync.WaitGroup
-)
+}
 
-func start_chat_server(wg *sync.WaitGroup) {
-	chat_s = server.New()
-	chat_s.Conf = conf
-
-	err := chat_s.Serve()
+func (mc *main_controller) start_chat_server() {
+	err := mc.chat_s.Serve()
 
 	if err != nil {
-		wg.Done()
+		mc.gwg.Done()
 	}
 }
 
-func start_admin_server(wg *sync.WaitGroup) {
-	admin_s = NewAdminServer(chat_s)
-	err := admin_s.Server()
+func (mc *main_controller) start_admin_server() {
+	err := mc.admin_s.Server()
 
 	if err != nil {
-		wg.Done()
+		mc.gwg.Done()
 	}
 }
 
 func main() {
+	controller := main_controller{}
+
 	if len(os.Args) == 3 &&
 		strings.Compare(os.Args[1], "-C") == 0 {
-		conf = config.New(os.Args[2])
+		controller.config = config.New(os.Args[2])
 	} else {
-		conf = config.New()
+		controller.config = config.New()
 	}
 
-	gwg.Add(2)
+	/* initialize the chat server and the admin server */
+	controller.chat_s = server.New()
+	controller.chat_s.Conf = controller.config
+	/* ALWAYS after initialization of the chat server */
+	controller.admin_s = NewAdminServer(&controller)
 
-	go start_chat_server(&gwg)
-	go start_admin_server(&gwg)
+	controller.gwg.Add(2)
+	go controller.start_chat_server()
+	go controller.start_admin_server()
 
-	gwg.Wait()
+	controller.gwg.Wait()
 }
