@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+type ConFunc func(*Config)
+
 const (
 	CONF_PATHS = "gochat_server.json:../gochat_server.json:/etc/gochat_server.json"
 
@@ -40,6 +42,7 @@ type Config struct {
 	Log struct {
 		LogLevel uint `json:"log_level"`
 	}
+	ConfigPath string
 }
 
 func fileof(path string) (f *os.File, err error) {
@@ -55,32 +58,52 @@ func fileof(path string) (f *os.File, err error) {
 func get_conf_file(config_path ...string) (*os.File, string, error) {
 	for _, path := range config_path {
 		f, err := fileof(path)
-		return f, path, err
+		if err == nil {
+			return f, path, err
+		}
 	}
 	for _, path := range strings.Split(CONF_PATHS, ":") {
 		f, err := fileof(path)
-		return f, path, err
-	}
-	return nil, "", errors.New("Config not found")
-}
-
-func New(config_path ...string) *Config {
-	cfg := default_conf()
-
-	f, path, err := get_conf_file(config_path...)
-	if err == nil {
-		jp := json.NewDecoder(f)
-		if err = jp.Decode(cfg); err != nil {
-			println("loading configuration failed -- " + err.Error())
-			println("loading default configuration")
-			return default_conf()
-		} else {
-			println("configuration loaded from " + path)
-			return cfg
+		if err == nil {
+			return f, path, err
 		}
 	}
-	println("loading configuration failed -- " + err.Error())
-	println("loading default configuration")
+	return nil, "", errors.New("Config File Not Found")
+}
+
+func (c *Config) load_config() {
+	f, path, err := get_conf_file(c.ConfigPath)
+	if err == nil {
+		jp := json.NewDecoder(f)
+		if err = jp.Decode(c); err != nil {
+			println("loading configuration failed -- " + err.Error())
+			println("loading default configuration")
+		} else {
+			println("configuration loaded from " + path)
+		}
+	} else {
+		println("loading configuration failed -- " + err.Error())
+		println("using the default configuration")
+	}
+}
+
+func WithConfigPath(path string) ConFunc {
+	return func(c *Config) {
+		defer c.load_config()
+		c.ConfigPath = path
+	}
+}
+
+func New(config_funcs ...ConFunc) *Config {
+	cfg := default_conf()
+	for _, fun := range config_funcs {
+		fun(cfg)
+	}
+
+	/* load config from default paths if it's not being loaded already */
+	if len(cfg.ConfigPath) == 0 {
+		cfg.load_config()
+	}
 	return cfg
 }
 
