@@ -21,7 +21,7 @@ type AdminServer struct {
 	Conf       *config.Config          `json:"-"`
 }
 
-func (s *AdminServer) Server() error {
+func (s *AdminServer) Serve() error {
 	for p, fun := range s.Handlers {
 		http.HandleFunc(p, fun.HandlerFunc)
 	}

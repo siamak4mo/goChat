@@ -24,7 +24,7 @@ func (mc *main_controller) start_chat_server() {
 }
 
 func (mc *main_controller) start_admin_server() {
-	err := mc.admin_s.Server()
+	err := mc.admin_s.Serve()
 
 	if err != nil {
 		mc.gwg.Done()
