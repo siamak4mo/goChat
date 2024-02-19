@@ -14,9 +14,9 @@ type AdminHandler struct {
 }
 
 type AdminServer struct {
-	Handlers     map[string]AdminHandler `json:"routes"`
-	ChatServer   *server.Server          `json:"-"`
-	Loger        *serlog.Log             `json:"-"`
+	Handlers   map[string]AdminHandler `json:"routes"`
+	ChatServer *server.Server          `json:"-"`
+	Loger      *serlog.Log             `json:"-"`
 }
 
 func (s *AdminServer) Server() error {
@@ -80,9 +80,9 @@ func NewAdminServer(chat_server *server.Server) *AdminServer {
 	}
 
 	admin_s = &AdminServer{
-		Handlers:     h,
+		Handlers:   h,
 		ChatServer: chat_server,
-		Loger:        serlog.New(*conf, "Admin Server"),
+		Loger:      serlog.New(*conf, "Admin Server"),
 	}
 
 	return admin_s
@@ -223,7 +223,7 @@ func reg_new_user(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			user_token := chat_s.RegisterUser(data.Name)
 			w.Write([]byte("Token: " + user_token + "\n"))
-		}else{
+		} else {
 			w.Write([]byte("ops\n" + err.Error()))
 		}
 	}
