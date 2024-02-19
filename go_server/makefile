@@ -7,18 +7,18 @@ BUILD_OUT = ../server.bin
 TEST_DIR  = test
 SRC_DIR   = chat_server
 
-SRC = go.mod $(SRC_DIR)/server.go $(SRC_DIR)/stoken/token.go $(SRC_DIR)/config/config.go $(SRC_DIR)/serlog/logging.go server_admin.go server_main.go
+SRC = go.mod $(SRC_DIR)/server.go $(SRC_DIR)/stoken/token.go $(SRC_DIR)/config/config.go $(SRC_DIR)/serlog/logging.go admin_server.go server_main.go
 
 all: $(BUILD_OUT)
 
 
 $(BUILD_OUT): $(SRC) 
-	$(GO_BUILD) -o $(BUILD_OUT) server_admin.go server_main.go
+	$(GO_BUILD) -o $(BUILD_OUT) admin_server.go server_main.go
 
 
 .PHONY: run
 run:
-	$(GO_RUN) server_admin.go server_main.go
+	$(GO_RUN) admin_server.go server_main.go
 
 
 .PHONY: test
