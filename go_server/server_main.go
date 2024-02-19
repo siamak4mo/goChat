@@ -36,7 +36,7 @@ func main() {
 
 	if len(os.Args) == 3 &&
 		strings.Compare(os.Args[1], "-C") == 0 {
-		controller.config = config.New(os.Args[2])
+		controller.config = config.New(config.WithConfigPath(os.Args[2]))
 	} else {
 		controller.config = config.New()
 	}
