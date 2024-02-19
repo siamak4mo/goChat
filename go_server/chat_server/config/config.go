@@ -65,7 +65,7 @@ func get_conf_file(config_path ...string) (*os.File, string, error) {
 }
 
 func New(config_path ...string) *Config {
-	cfg := Default()
+	cfg := default_conf()
 
 	f, path, err := get_conf_file(config_path...)
 	if err == nil {
@@ -73,7 +73,7 @@ func New(config_path ...string) *Config {
 		if err = jp.Decode(cfg); err != nil {
 			println("loading configuration failed -- " + err.Error())
 			println("loading default configuration")
-			return Default()
+			return default_conf()
 		} else {
 			println("configuration loaded from " + path)
 			return cfg
@@ -84,7 +84,7 @@ func New(config_path ...string) *Config {
 	return cfg
 }
 
-func Default() *Config {
+func default_conf() *Config {
 	cfg := Config{}
 
 	cfg.Server.Addr = LADDR + ":" + LPORT
