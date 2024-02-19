@@ -15,7 +15,7 @@ type AdminHandler struct {
 
 type AdminServer struct {
 	Handlers     map[string]AdminHandler `json:"routes"`
-	GoChatServer *server.Server          `json:"-"`
+	ChatServer   *server.Server          `json:"-"`
 	Loger        *serlog.Log             `json:"-"`
 }
 
@@ -34,7 +34,7 @@ func (s *AdminServer) Server() error {
 	return nil
 }
 
-func NewAdminServer(server *server.Server) *AdminServer {
+func NewAdminServer(chat_server *server.Server) *AdminServer {
 	h := make(map[string]AdminHandler)
 
 	h["/"] = AdminHandler{
@@ -81,7 +81,7 @@ func NewAdminServer(server *server.Server) *AdminServer {
 
 	admin_s = &AdminServer{
 		Handlers:     h,
-		GoChatServer: server,
+		ChatServer: chat_server,
 		Loger:        serlog.New(*conf, "Admin Server"),
 	}
 
