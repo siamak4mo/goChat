@@ -8,14 +8,14 @@ import (
 	"server/chat_server/serlog"
 )
 
-type AdminHandler struct {
+type routeHandler struct {
 	http.HandlerFunc `json:"-"`
 	Info             string `json:"info"`
 	Method           string `json:"usage"`
 }
 
 type AdminServer struct {
-	Handlers   map[string]AdminHandler `json:"routes"`
+	Handlers   map[string]routeHandler `json:"routes"`
 	ChatServer *server.Server          `json:"-"`
 	Loger      *serlog.Log             `json:"-"`
 	Conf       *config.Config          `json:"-"`
@@ -37,7 +37,7 @@ func (s *AdminServer) Server() error {
 }
 
 func NewAdminServer(controller *main_controller) *AdminServer {
-	h := make(map[string]AdminHandler)
+	h := make(map[string]routeHandler)
 
 	s := &AdminServer{
 		Handlers:   h,
@@ -46,14 +46,14 @@ func NewAdminServer(controller *main_controller) *AdminServer {
 		Conf:       controller.config,
 	}
 
-	h["/"] = AdminHandler{
+	h["/"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.root(w, r)
 		},
 		Info:   "root page",
 		Method: "GET - no param",
 	}
-	h["/register"] = AdminHandler{
+	h["/register"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.reg_new_user(w, r)
 		},
@@ -61,42 +61,42 @@ func NewAdminServer(controller *main_controller) *AdminServer {
 		Method: "POST - username to sign up",
 	}
 
-	h["/chats/stat"] = AdminHandler{
+	h["/chats/stat"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.chat_stat(w, r)
 		},
 		Info:   "statistics of chats",
 		Method: "GET - no param",
 	}
-	h["/chat/users"] = AdminHandler{
+	h["/chat/users"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.chat_users(w, r)
 		},
 		Info:   "show users of a chat room",
 		Method: "GET - URL params: ?chat=key (16 byte chat key)",
 	}
-	h["/chat/add"] = AdminHandler{
+	h["/chat/add"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.chat_add(w, r)
 		},
 		Info:   "make a new chat room",
 		Method: "POST - json req: {\"name\": \"chat name\", \"banner\": \"chat message of the day\"}",
 	}
-	h["/chat/remove"] = AdminHandler{
+	h["/chat/remove"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.chat_remove(w, r)
 		},
 		Info:   "remove a chat room",
 		Method: "POST - json req: {\"chat key\": \"chat key (16 byte)\"}",
 	}
-	h["/users/stat"] = AdminHandler{
+	h["/users/stat"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.user_stat(w, r)
 		},
 		Info:   "show logged in users",
 		Method: "GET - no param",
 	}
-	h["/config/lookup"] = AdminHandler{
+	h["/config/lookup"] = routeHandler{
 		HandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 			s.config_lookup(w, r)
 		},
@@ -120,7 +120,7 @@ func (s *AdminServer) root(w http.ResponseWriter, r *http.Request) {
 			Status: "OK",
 		}
 		res["admin server"] = struct {
-			Handlers map[string]AdminHandler `json:"Routes"`
+			Handlers map[string]routeHandler `json:"Routes"`
 			Name     string                  `json:"name"`
 			Addr     string                  `json:"address"`
 		}{
