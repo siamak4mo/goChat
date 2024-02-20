@@ -5,7 +5,7 @@ import (
 	"net/http"
 	server "server/chat_server"
 	"server/config"
-	"server/serlog"
+	"server/logger"
 )
 
 type routeHandler struct {
