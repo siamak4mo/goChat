@@ -1,6 +1,6 @@
-#GO_CC = -compiler gccgo  # uncomment to use gccgo
-GO_BUILD = go build $(GO_CC)
-GO_RUN = go run $(GO_CC)
+GO_CFLAGS = -compiler gccgo  # comment it to use the default go compiler
+GO_BUILD = go build $(GO_CFLAGS)
+GO_RUN = go run $(GO_CFLAGS)
 GO_TEST = go test
 
 BUILD_OUT = ../server.bin
