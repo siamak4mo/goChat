@@ -7,6 +7,9 @@ go_server: server program  --  c_client: client program
 run `make deploy` to build `server.bin`, `client.bin`, and
 `gochat_server.json` (the server configuration) files.
 
+the provided makefile uses `gccgo` compiler, if you want to use
+the default go compiler, comment the first line of the `go_server/makefile` out.
+
 the server program is a zero-dependency `GoLang` project,
 and the client program is written in `C` and only depends
 on the `ncurses` library, so be sure `ncurses.h` is available.
