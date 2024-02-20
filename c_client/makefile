@@ -7,9 +7,13 @@ BUILD_OUT=../client.bin
 OBJ=net.o chat_window.o
 
 
-all: main.c $(OBJ)
-	$(CC) $(CFLAGS) -c main.c -o main.o
+all: $(BUILD_OUT)
+
+$(BUILD_OUT): main.o $(OBJ)
 	$(CC) $(CFLAGS) -o $(BUILD_OUT) main.o $(OBJ) $(LDFLAGS)
+
+main.o: main.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@
