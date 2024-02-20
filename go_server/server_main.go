@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	server "server/chat_server"
-	"server/chat_server/config"
+	"server/config"
 	"strings"
 	"sync"
 )

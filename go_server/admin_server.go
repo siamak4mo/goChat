@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	server "server/chat_server"
-	"server/chat_server/config"
-	"server/chat_server/serlog"
+	"server/config"
+	"server/serlog"
 )
 
 type routeHandler struct {

@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"server/chat_server/config"
+	"server/config"
 	"strings"
 )
 

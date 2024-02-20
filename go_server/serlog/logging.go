@@ -3,7 +3,7 @@ package serlog
 import (
 	"fmt"
 	"os"
-	"server/chat_server/config"
+	"server/config"
 	"time"
 )
 
