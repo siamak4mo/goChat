@@ -1,4 +1,7 @@
-CFLAGS=-g -ggdb -Wall -Wextra `pkg-config --cflags ncurses` -I.
+_CFLAGS_H=-g -ggdb
+# _CFLAGS_H=-O3 # uncomment to enable optimization
+
+CFLAGS=$(_CFLAGS_H) -Wall -Wextra -Werror `pkg-config --cflags ncurses` -I.
 LDFLAGS=`pkg-config --libs ncurses`
 BUILD_OUT=../client.bin
 OBJ=net.o chat_window.o
