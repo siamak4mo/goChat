@@ -17,26 +17,20 @@ const (
 	Panic
 )
 
+var (
+	level2str = map[Lev]string{
+		Debug:   "[DEBUG] ",
+		Info:    "[INFO] ",
+		Warning: "[WARNING] ",
+		Error:   "ERROR -- ",
+		Panic:   " ** PANIC ** ",
+	}
+)
+
 type Log struct {
 	Time     time.Time
 	Module   string
 	LogLevel uint
-}
-
-func level2str(level Lev) string {
-	switch level {
-	case Debug:
-		return "[Debug] "
-	case Info:
-		return "[INFO] "
-	case Warning:
-		return "[Warning] "
-	case Error:
-		return "ERROR -- "
-	case Panic:
-		return " ** PANIC **  "
-	}
-	return ""
 }
 
 func New(cfg config.Config, module_name string) *Log {
@@ -52,7 +46,7 @@ func (l Log) logf(level Lev, fun func(), format string, args ...any) {
 
 	if level >= Lev(l.LogLevel) {
 		l.Time = time.Now()
-		fmt.Printf("%s| %v %s", l.Module, l.Time.Unix(), level2str(level))
+		fmt.Printf("%s| %v %s", l.Module, l.Time.Unix(), level2str[level])
 		fmt.Printf(format, args...)
 	}
 }
