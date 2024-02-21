@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	level2str = map[Lev]string{
+	lev_label = map[Lev]string{
 		Debug:   "[DEBUG] ",
 		Info:    "[INFO] ",
 		Warning: "[WARNING] ",
@@ -28,25 +28,25 @@ var (
 )
 
 type Log struct {
-	Time     time.Time
-	Module   string
-	LogLevel uint
+	time      time.Time
+	module    string
+	log_level uint
 }
 
 func New(cfg config.Config, module_name string) *Log {
 	return &Log{
-		LogLevel: cfg.Log.LogLevel,
-		Time:     time.Now(),
-		Module:   module_name,
+		log_level: cfg.Log.LogLevel,
+		time:      time.Now(),
+		module:    module_name,
 	}
 }
 
 func (l Log) logf(level Lev, fun func(), format string, args ...any) {
 	defer fun()
 
-	if level >= Lev(l.LogLevel) {
-		l.Time = time.Now()
-		fmt.Printf("%s| %v %s", l.Module, l.Time.Unix(), level2str[level])
+	if level >= Lev(l.log_level) {
+		l.time = time.Now()
+		fmt.Printf("%s| %v %s", l.module, l.time.Unix(), lev_label[level])
 		fmt.Printf(format, args...)
 	}
 }
@@ -86,6 +86,6 @@ func (l Log) Printf(format string, args ...any) {
 }
 
 func (l Log) Pprintf(format string, args ...any) {
-	fmt.Printf("%s| ", l.Module)
+	fmt.Printf("%s| ", l.module)
 	fmt.Printf(format, args...)
 }
