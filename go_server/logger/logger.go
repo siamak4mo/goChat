@@ -59,17 +59,17 @@ func (lw *LogWriter) Flushf(format string, args ...any) {
 
 // log extension
 func LogEX_UpdateTime() LogExt {
-	return  func(l *LogWriter){
+	return func(l *LogWriter) {
 		l.Time = time.Now()
 	}
 }
 func LogEX_SetModule(module string) LogExt {
-	return func(l *LogWriter){
+	return func(l *LogWriter) {
 		l.Module = module
 	}
 }
 func LogEX_SetTime(t time.Time) LogExt {
-	return func(l *LogWriter){
+	return func(l *LogWriter) {
 		l.Time = t
 	}
 }
@@ -79,8 +79,8 @@ func (l *Log) funMaker(level Level, extensions ...LogExt) Logf {
 		if level >= Level(l.log_level) {
 			lw := &LogWriter{
 				LogLevel: level,
-				Time: time.Now(),
-				Module: l.module,
+				Time:     time.Now(),
+				Module:   l.module,
 			}
 			for _, fun := range extensions {
 				fun(lw)
