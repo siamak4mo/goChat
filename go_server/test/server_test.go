@@ -30,6 +30,15 @@ const (
 	C_chat_select
 )
 
+var (
+	Command = map[chatCommand]string{
+		C_signup:      "S",
+		C_login_out:   "L",
+		C_text:        "T",
+		C_chat_select: "C",
+	}
+)
+
 type ChatSerConn struct {
 	net.Conn
 	Token    string
@@ -84,27 +93,9 @@ func init() {
 	csc2 = NewCSC()
 }
 
-func (csc *ChatSerConn) send2chat(command chatCommand, mess string) {
-	var comm string
-	switch command {
-	case C_signup:
-		comm = "S "
-		break
-
-	case C_login_out:
-		comm = "L "
-		break
-
-	case C_text:
-		comm = "T "
-		break
-
-	case C_chat_select:
-		comm = "C "
-		break
-	}
-
-	io.WriteString(csc.Conn, comm+mess+"\n")
+func (csc *ChatSerConn) send2chat(comm chatCommand, mess string) {
+	to_write := fmt.Sprintf("%s %s\n", Command[comm], mess)
+	io.WriteString(csc.Conn, to_write)
 }
 
 func (csc *ChatSerConn) readFchat() string {
