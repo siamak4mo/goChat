@@ -7,8 +7,9 @@ import (
 )
 
 type (
-	Level uint
-	Logf  func(format string, args ...any)
+	Level  uint // log level
+	Logf   func(format string, args ...any)
+	LogExt func(*Log) // log extension
 )
 
 const (
@@ -54,13 +55,24 @@ func flushf(l *Log, level Level, format string, args ...any) {
 	}
 }
 
-func (l *Log) Debugf() Logf {
+// this is a LogExt (extension) example
+func LogUpdateTime(l *Log) {
+	l.time = time.Now()
+}
+
+func (l *Log) Debugf(extensions ...LogExt) Logf {
+	for _, fun := range extensions {
+		fun(l)
+	}
 	return func(format string, args ...any) {
 		flushf(l, L_Debug, format, args)
 	}
 }
 
-func (l *Log) Infof() Logf {
+func (l *Log) Infof(extensions ...LogExt) Logf {
+	for _, fun := range extensions {
+		fun(l)
+	}
 	return func(format string, args ...any) {
 		flushf(l, L_Info, format, args)
 	}
