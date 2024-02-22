@@ -117,12 +117,12 @@ func Test_chatserver_is_up(t *testing.T) {
 }
 
 func Test_Signup_Login(t *testing.T) {
-	csc1.Username = "my name"
+	csc1.Username = "NT_my name"
 	csc1.send2chat(C_signup, csc1.Username) // send signup request
 	res := csc1.readFchat()
 
 	if strings.Compare(res,
-		"Token: bXkgbmFtZQ==.2548acd8b40019cffd702fcf87ba50bfc8c948d3247894c7a89c5fcc847c21ff") != 0 {
+		"Token: TlRfbXkgbmFtZQ==.3771a7260a75c1b6e4305badaf5e821f4aaba94dee0af520257fa7d78bd4ef88") != 0 {
 		t.Fatalf("Wrong Token")
 	}
 	csc1.Token = res[7:] // `Token: xxx`[7:] = `xxx`
@@ -148,7 +148,7 @@ func Test_Second_Login(t *testing.T) {
 		t.Fatalf("double login.")
 	}
 
-	csc2.Username = "user-2-"
+	csc2.Username = "NT_user-2-"
 	csc2.send2chat(C_signup, csc2.Username)
 	_tmp := csc2.readFchat()
 
