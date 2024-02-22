@@ -48,11 +48,9 @@ func New(cfg config.Config, module_name string) *Log {
 	}
 }
 
-// internal function
 // prints: `module name | epoch time [level]`
 // and then normal printf with format and args
 func (lw *LogWriter) Flushf(format string, args ...any) {
-	lw.Time = time.Now()
 	fmt.Printf("%s| %v %s", lw.Module, lw.Time.Unix(), lev_label[lw.LogLevel])
 	fmt.Printf(format, args...)
 }
