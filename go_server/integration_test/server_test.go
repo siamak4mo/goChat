@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package integration_test
@@ -6,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	server "server/chat_server"
 	"server/config"
 	"strings"
@@ -88,7 +90,7 @@ func init() {
 	chat_s.Conf = conf
 
 	go func() {
-		defer println("fatal -- unreachable")
+		defer os.Exit(1)
 		if e := chat_s.Serve(); e != nil {
 			println("fatal -- " + e.Error())
 		}
