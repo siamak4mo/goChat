@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	Lev       uint
+	Lev  uint
 	Logf func(format string, args ...any)
 )
 
@@ -59,29 +59,29 @@ func (l *Log) Debugf() Logf {
 		flushf(l, Debug, format, args)
 	}
 }
+
 func (l *Log) Infof() Logf {
 	return func(format string, args ...any) {
 		flushf(l, Info, format, args)
 	}
 }
+
 func (l *Log) Warnf() Logf {
 	return func(format string, args ...any) {
 		flushf(l, Warning, format, args)
 	}
-
 }
 
 func (l *Log) Errorf() Logf {
 	return func(format string, args ...any) {
 		flushf(l, Error, format, args)
 	}
-
 }
+
 func (l *Log) Panicf() Logf {
 	return func(format string, args ...any) {
 		flushf(l, Panic, format, args)
 	}
-
 }
 
 func (l *Log) Printf(format string, args ...any) {
