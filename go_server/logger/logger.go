@@ -2,7 +2,6 @@ package serlog
 
 import (
 	"fmt"
-	"os"
 	"server/config"
 	"time"
 )
@@ -41,9 +40,7 @@ func New(cfg config.Config, module_name string) *Log {
 	}
 }
 
-func (l Log) logf(level Lev, fun func(), format string, args ...any) {
-	defer fun()
-
+func (l Log) logf(level Lev, format string, args ...any) {
 	if level >= Lev(l.log_level) {
 		l.time = time.Now()
 		fmt.Printf("%s| %v %s", l.module, l.time.Unix(), lev_label[level])
@@ -51,34 +48,21 @@ func (l Log) logf(level Lev, fun func(), format string, args ...any) {
 	}
 }
 
-func Nop() {}
-func ExitErr() {
-	os.Exit(1)
-}
-
 func (l Log) Debugf(format string, args ...any) {
-	l.logf(Debug, Nop, format, args...)
+	l.logf(Debug, format, args...)
 }
 func (l Log) Infof(format string, args ...any) {
-	l.logf(Info, Nop, format, args...)
+	l.logf(Info, format, args...)
 }
 func (l Log) Warnf(format string, args ...any) {
-	l.logf(Warning, Nop, format, args...)
+	l.logf(Warning, format, args...)
 }
 
-func (l Log) Errorf(format string, fun func(), args ...any) {
-	if fun != nil {
-		l.logf(Error, fun, format, args...)
-	} else {
-		l.logf(Error, ExitErr, format, args...)
-	}
+func (l Log) Errorf(format string, args ...any) {
+	l.logf(Error, format, args...)
 }
-func (l Log) Panicf(format string, fun func(), args ...any) {
-	if fun != nil {
-		l.logf(Panic, fun, format, args...)
-	} else {
-		l.logf(Panic, ExitErr, format, args...)
-	}
+func (l Log) Panicf(format string, args ...any) {
+	l.logf(Panic, format, args...)
 }
 
 func (l Log) Printf(format string, args ...any) {
