@@ -9,9 +9,9 @@ of the server which you can find in the gochat_server.template file
 
 
 
-  ================
-   go chat server
-  ================
+  =============
+   Chat Server
+  =============
 
 run and connect to the server using any client you want:
 
@@ -54,7 +54,7 @@ C 48434bda39a3ee5e                # now you joined the HCK room
 
 
   ==============
-   admin server
+   Admin Server
   ==============
 
 it's for monitoring and managing the chat_server itself
