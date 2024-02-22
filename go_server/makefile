@@ -23,4 +23,4 @@ run:
 
 .PHONY: test
 test:
-	cd $(TEST_DIR); $(GO_TEST)
+	cd $(TEST_DIR); $(GO_TEST) -tags=integration
