@@ -4,7 +4,7 @@ GO_RUN = go run $(GO_CFLAGS)
 GO_TEST = go test
 
 BUILD_OUT = ../server.bin
-TEST_DIR  = test
+TEST_DIR  = integration_test
 SRC_DIR   = chat_server
 
 SRC = go.mod $(SRC_DIR)/server.go $(SRC_DIR)/stoken/token.go config/config.go logger/logger.go admin_server.go server_main.go
