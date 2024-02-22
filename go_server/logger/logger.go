@@ -7,25 +7,25 @@ import (
 )
 
 type (
-	Lev  uint
-	Logf func(format string, args ...any)
+	Level uint
+	Logf  func(format string, args ...any)
 )
 
 const (
-	Debug Lev = iota + 1
-	Info
-	Warning
-	Error
-	Panic
+	L_Debug Level = iota + 1
+	L_Info
+	L_Warning
+	L_Error
+	L_Panic
 )
 
 var (
-	lev_label = map[Lev]string{
-		Debug:   "[DEBUG] ",
-		Info:    "[INFO] ",
-		Warning: "[WARNING] ",
-		Error:   "ERROR -- ",
-		Panic:   " ** PANIC ** ",
+	lev_label = map[Level]string{
+		L_Debug:   "[DEBUG] ",
+		L_Info:    "[INFO] ",
+		L_Warning: "[WARNING] ",
+		L_Error:   "ERROR -- ",
+		L_Panic:   " ** PANIC ** ",
 	}
 )
 
@@ -46,8 +46,8 @@ func New(cfg config.Config, module_name string) *Log {
 // internal function
 // prints: `module name | epoch time [level]`
 // and then normal printf with format and args
-func flushf(l *Log, level Lev, format string, args ...any) {
-	if level >= Lev(l.log_level) {
+func flushf(l *Log, level Level, format string, args ...any) {
+	if level >= Level(l.log_level) {
 		l.time = time.Now()
 		fmt.Printf("%s| %v %s", l.module, l.time.Unix(), lev_label[level])
 		fmt.Printf(format, args...)
@@ -56,31 +56,31 @@ func flushf(l *Log, level Lev, format string, args ...any) {
 
 func (l *Log) Debugf() Logf {
 	return func(format string, args ...any) {
-		flushf(l, Debug, format, args)
+		flushf(l, L_Debug, format, args)
 	}
 }
 
 func (l *Log) Infof() Logf {
 	return func(format string, args ...any) {
-		flushf(l, Info, format, args)
+		flushf(l, L_Info, format, args)
 	}
 }
 
 func (l *Log) Warnf() Logf {
 	return func(format string, args ...any) {
-		flushf(l, Warning, format, args)
+		flushf(l, L_Warning, format, args)
 	}
 }
 
 func (l *Log) Errorf() Logf {
 	return func(format string, args ...any) {
-		flushf(l, Error, format, args)
+		flushf(l, L_Error, format, args)
 	}
 }
 
 func (l *Log) Panicf() Logf {
 	return func(format string, args ...any) {
-		flushf(l, Panic, format, args)
+		flushf(l, L_Panic, format, args)
 	}
 }
 
