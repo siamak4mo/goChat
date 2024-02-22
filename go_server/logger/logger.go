@@ -1,4 +1,4 @@
-package serlog
+package logger
 
 import (
 	"fmt"
