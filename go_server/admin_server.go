@@ -130,7 +130,7 @@ func (s *AdminServer) root(w http.ResponseWriter, r *http.Request) {
 		}
 		resp, err := json.Marshal(res)
 		if err != nil {
-			s.Loger.Warnf("json.Marshal error: %s\n", err.Error())
+			s.Loger.Warnf()("json.Marshal error: %s\n", err.Error())
 		}
 		w.Write(resp)
 	}
@@ -155,18 +155,18 @@ func (s *AdminServer) user_stat(w http.ResponseWriter, r *http.Request) {
 		}
 		resp, err := json.Marshal(res)
 		if err != nil {
-			s.Loger.Warnf("json.Marshal error: %s\n", err.Error())
+			s.Loger.Warnf()("json.Marshal error: %s\n", err.Error())
 		}
 		w.Write(resp)
 	}
 }
 func (s *AdminServer) config_lookup(w http.ResponseWriter, r *http.Request) {
-	s.Loger.Warnf("Config Lookup Access\n")
+	s.Loger.Warnf()("Config Lookup Access\n")
 	if r.Method == http.MethodGet {
 		w.Header().Set("Content-Type", "application/json")
 		resp, err := json.Marshal(s.Conf)
 		if err != nil {
-			s.Loger.Warnf("json.Marshal error: %s\n", err.Error())
+			s.Loger.Warnf()("json.Marshal error: %s\n", err.Error())
 		}
 		w.Write(resp)
 	}
@@ -189,7 +189,7 @@ func (s *AdminServer) chat_stat(w http.ResponseWriter, r *http.Request) {
 		}
 		resp, err := json.Marshal(res)
 		if err != nil {
-			s.Loger.Warnf("json.Marshal error: %s\n", err.Error())
+			s.Loger.Warnf()("json.Marshal error: %s\n", err.Error())
 		}
 		w.Write(resp)
 	}
@@ -209,7 +209,7 @@ func (s *AdminServer) chat_users(w http.ResponseWriter, r *http.Request) {
 		}
 		resp, err := json.Marshal(res)
 		if err != nil {
-			s.Loger.Warnf("json.Marshal error: %s\n", err.Error())
+			s.Loger.Warnf()("json.Marshal error: %s\n", err.Error())
 		}
 		w.Write(resp)
 	}

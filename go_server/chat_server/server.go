@@ -130,12 +130,12 @@ func newChat(name string, banner string) *Chat {
 
 func (s *Server) AddNewChat(name string, banner string) {
 	c := newChat(name, banner)
-	s.Log.Infof("chat %s added\n", c.ChatKey)
+	s.Log.Infof()("chat %s added\n", c.ChatKey)
 	s.Chats[c.ChatKey] = c
 }
 
 func (s *Server) RemoveChat(key string) {
-	s.Log.Infof("chat %s removed\n", key)
+	s.Log.Infof()("chat %s removed\n", key)
 	for lp := range s.Chats[key].Members {
 		lp.Swrite("this chat no longer exists, login to another chat\n", s)
 		lp.User.ChatKey = ""
@@ -148,7 +148,7 @@ func (s *Server) RegisterUser(name string) string {
 	tk.Username = []byte(name)
 	tk.MkToken()
 
-	s.Log.Infof("%s registered\n", tk.Signature[0:16])
+	s.Log.Infof()("%s registered\n", tk.Signature[0:16])
 
 	return tk.Token
 }
@@ -158,7 +158,7 @@ func (s *Server) Serve() error {
 	ln, err := net.Listen("tcp", s.Conf.Server.Addr)
 
 	if err != nil {
-		s.Log.Panicf("Could not listen on %v\n", s.Conf.Server.Addr)
+		s.Log.Panicf()("Could not listen on %v\n", s.Conf.Server.Addr)
 		return err
 	}
 
@@ -174,7 +174,7 @@ func (s *Server) Serve() error {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			s.Log.Warnf("could not accept a connection\n")
+			s.Log.Warnf()("could not accept a connection\n")
 			continue
 		}
 
@@ -194,13 +194,13 @@ func (s *Server) handle_clients() {
 				if p.User != nil {
 					_u = p.User
 					delete(s.Clients, p.Payload)
-					s.Log.Debugf("%s disconnected\n", _u.Username)
+					s.Log.Debugf()("%s disconnected\n", _u.Username)
 				} else if s.Clients[p.Payload] != nil {
 					_u = s.Clients[p.Payload].User
 					delete(s.Clients, p.Payload)
-					s.Log.Debugf("%s disconnected\n", _u.Username)
+					s.Log.Debugf()("%s disconnected\n", _u.Username)
 				} else {
-					s.Log.Debugf("ANONYMOUS DISCONNECTED\n")
+					s.Log.Debugf()("ANONYMOUS DISCONNECTED\n")
 				}
 
 				if len(_u.ChatKey) != 0 {
@@ -219,14 +219,14 @@ func (s *Server) handle_clients() {
 				p.User = u
 				if !s.username_exist(u.Username) {
 					s.Clients[p.RemoteAddr()] = &p
-					s.Log.Debugf("%s logged in\n", u.Username)
+					s.Log.Debugf()("%s logged in\n", u.Username)
 					p.Swrite("Logged in\n", s)
 
 				} else {
 					p.Swrite("Already Logged in\n", s)
 				}
 			} else {
-				s.Log.Infof("LOGIN FAILED\n")
+				s.Log.Infof()("LOGIN FAILED\n")
 				p.Swrite("Login Failed\n", s)
 				p.Conn.Close()
 			}
@@ -296,12 +296,12 @@ func (s *Server) handle_clients() {
 			_u := &User_t{}
 			if p.User != nil {
 				_u = p.User
-				s.Log.Debugf("%s logged out\n", _u.Username)
+				s.Log.Debugf()("%s logged out\n", _u.Username)
 				p.Swrite("Logged out\n", s)
 			} else {
 				if s.Clients[p.Payload] != nil {
 					_u = s.Clients[p.Payload].User
-					s.Log.Debugf("%s logged out\n", _u.Username)
+					s.Log.Debugf()("%s logged out\n", _u.Username)
 					p.Swrite("Logged out\n", s)
 				} else {
 					p.Swrite("you are not logged in\n", s)
