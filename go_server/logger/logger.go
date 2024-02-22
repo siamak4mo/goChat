@@ -58,7 +58,7 @@ func (lw *LogWriter) Flushf(format string, args ...any) {
 }
 
 // helper function maker
-func (l *Log) printer_fun_maker(level Level, extensions ...LogExt) Logf {
+func (l *Log) MkPriterFun(level Level, extensions ...LogExt) Logf {
 	return func(format string, args ...any) {
 		if level >= Level(l.log_level) {
 			lw := &LogWriter{
@@ -75,23 +75,23 @@ func (l *Log) printer_fun_maker(level Level, extensions ...LogExt) Logf {
 }
 
 func (l *Log) Debugf(extensions ...LogExt) Logf {
-	return l.printer_fun_maker(L_Debug, extensions...)
+	return l.MkPriterFun(L_Debug, extensions...)
 }
 
 func (l *Log) Infof(extensions ...LogExt) Logf {
-	return l.printer_fun_maker(L_Info, extensions...)
+	return l.MkPriterFun(L_Info, extensions...)
 }
 
 func (l *Log) Warnf() Logf {
-	return l.printer_fun_maker(L_Warning)
+	return l.MkPriterFun(L_Warning)
 }
 
 func (l *Log) Errorf() Logf {
-	return l.printer_fun_maker(L_Error)
+	return l.MkPriterFun(L_Error)
 }
 
 func (l *Log) Panicf() Logf {
-	return l.printer_fun_maker(L_Panic)
+	return l.MkPriterFun(L_Panic)
 }
 
 func (l *Log) Printf(format string, args ...any) {
