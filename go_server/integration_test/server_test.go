@@ -1,4 +1,4 @@
-package server
+package integration_test
 
 import (
 	"fmt"
