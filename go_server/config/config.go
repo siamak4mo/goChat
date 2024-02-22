@@ -95,7 +95,7 @@ func WithConfigPath(path string) ConFunc {
 }
 
 func New(config_funcs ...ConFunc) *Config {
-	cfg := default_conf()
+	cfg := Default()
 	for _, fun := range config_funcs {
 		fun(cfg)
 	}
@@ -107,7 +107,7 @@ func New(config_funcs ...ConFunc) *Config {
 	return cfg
 }
 
-func default_conf() *Config {
+func Default() *Config {
 	cfg := Config{}
 
 	cfg.Server.Addr = LADDR + ":" + LPORT
