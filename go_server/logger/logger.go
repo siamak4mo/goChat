@@ -9,7 +9,7 @@ import (
 type (
 	Level  uint // log level
 	Logf   func(format string, args ...any)
-	LogExt func(*Log) // log extension
+	LogExt func(*LogWriter) // log extension
 )
 
 const (
@@ -31,15 +31,19 @@ var (
 )
 
 type Log struct {
-	time      time.Time
 	module    string
 	log_level uint
+}
+
+type LogWriter struct {
+	LogLevel Level
+	Time     time.Time
+	Module   string
 }
 
 func New(cfg config.Config, module_name string) *Log {
 	return &Log{
 		log_level: cfg.Log.LogLevel,
-		time:      time.Now(),
 		module:    module_name,
 	}
 }
@@ -47,53 +51,51 @@ func New(cfg config.Config, module_name string) *Log {
 // internal function
 // prints: `module name | epoch time [level]`
 // and then normal printf with format and args
-func flushf(l *Log, level Level, format string, args ...any) {
-	if level >= Level(l.log_level) {
-		l.time = time.Now()
-		fmt.Printf("%s| %v %s", l.module, l.time.Unix(), lev_label[level])
-		fmt.Printf(format, args...)
-	}
+func (lw *LogWriter) Flushf(format string, args ...any) {
+	lw.Time = time.Now()
+	fmt.Printf("%s| %v %s", lw.Module, lw.Time.Unix(), lev_label[lw.LogLevel])
+	fmt.Printf(format, args...)
 }
 
 // this is a LogExt (extension) example
-func LogUpdateTime(l *Log) {
-	l.time = time.Now()
+func LogUpdateTime(l *LogWriter) {
+	l.Time = time.Now()
+}
+
+func (l *Log) funMaker(level Level, extensions ...LogExt) Logf {
+	return func(format string, args ...any) {
+		if level >= Level(l.log_level) {
+			lw := &LogWriter{
+				LogLevel: level,
+				Time: time.Now(),
+				Module: l.module,
+			}
+			for _, fun := range extensions {
+				fun(lw)
+			}
+			lw.Flushf(format, args)
+		}
+	}
 }
 
 func (l *Log) Debugf(extensions ...LogExt) Logf {
-	for _, fun := range extensions {
-		fun(l)
-	}
-	return func(format string, args ...any) {
-		flushf(l, L_Debug, format, args)
-	}
+	return l.funMaker(L_Debug, extensions...)
 }
 
 func (l *Log) Infof(extensions ...LogExt) Logf {
-	for _, fun := range extensions {
-		fun(l)
-	}
-	return func(format string, args ...any) {
-		flushf(l, L_Info, format, args)
-	}
+	return l.funMaker(L_Info, extensions...)
 }
 
 func (l *Log) Warnf() Logf {
-	return func(format string, args ...any) {
-		flushf(l, L_Warning, format, args)
-	}
+	return l.funMaker(L_Warning)
 }
 
 func (l *Log) Errorf() Logf {
-	return func(format string, args ...any) {
-		flushf(l, L_Error, format, args)
-	}
+	return l.funMaker(L_Error)
 }
 
 func (l *Log) Panicf() Logf {
-	return func(format string, args ...any) {
-		flushf(l, L_Panic, format, args)
-	}
+	return l.funMaker(L_Panic)
 }
 
 func (l *Log) Printf(format string, args ...any) {
