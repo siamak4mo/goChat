@@ -58,8 +58,16 @@ func (lw *LogWriter) Flushf(format string, args ...any) {
 }
 
 // this is a LogExt (extension) example
-func LogUpdateTime(l *LogWriter) {
-	l.Time = time.Now()
+func LogUpdateTime() LogExt {
+	return  func(l *LogWriter){
+		l.Time = time.Now()
+	}
+}
+
+func LogSetModule(module string) LogExt {
+	return func(l *LogWriter){
+		l.Module = module
+	}
 }
 
 func (l *Log) funMaker(level Level, extensions ...LogExt) Logf {
