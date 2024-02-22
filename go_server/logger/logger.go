@@ -40,6 +40,9 @@ func New(cfg config.Config, module_name string) *Log {
 	}
 }
 
+// internal function
+// prints: `module name | epoch time [level]`
+// and then normal printf with format and args
 func (l Log) logf(level Lev, format string, args ...any) {
 	if level >= Lev(l.log_level) {
 		l.time = time.Now()
@@ -69,6 +72,8 @@ func (l Log) Printf(format string, args ...any) {
 	fmt.Printf(format, args...)
 }
 
+// prints: `module name | `
+// and then normal printf with format and args
 func (l Log) Pprintf(format string, args ...any) {
 	fmt.Printf("%s| ", l.module)
 	fmt.Printf(format, args...)
