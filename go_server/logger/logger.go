@@ -64,22 +64,29 @@ func LogEX_SetSubModule(sub_module string) LogExt {
 		l.Module = fmt.Sprintf("%s.%s", l.Module, sub_module)
 	}
 }
+
+// update current time
 func LogEX_UpdateTime() LogExt {
 	return func(l *LogWriter) {
 		l.Time = time.Now()
 	}
 }
+
+// set module
 func LogEX_SetModule(module string) LogExt {
 	return func(l *LogWriter) {
 		l.Module = module
 	}
 }
+
+// set time
 func LogEX_SetTime(t time.Time) LogExt {
 	return func(l *LogWriter) {
 		l.Time = t
 	}
 }
 
+// helper function maker
 func (l *Log) funMaker(level Level, extensions ...LogExt) Logf {
 	return func(format string, args ...any) {
 		if level >= Level(l.log_level) {
