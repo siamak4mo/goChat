@@ -127,7 +127,7 @@ $ curl 127.0.0.1:8081/chats/stat | jq
   ===============
 
 copy the `go_server/gochat_server.template` file to `gochat_server.json`
-and make sure json file and `server.bin` binary are in a same folder
+and make sure json file and `server.bin` binary are in the same folder
 
 * listen_addr:
   change to `0.0.0.0:PORT` to listen to all connections
@@ -135,11 +135,11 @@ and make sure json file and `server.bin` binary are in a same folder
   ** the admin server doesn't have any authentication method **
 
 * room_names, room_motds:
-  to make default chat rooms and set their message of the days (MOTDS)
+  to set default chat rooms and set their message of the day (MOTDS)
 
 * token_private_key:
   use a strong and long enough random value for this field,
-  otherwise users might create trusted tokens without your permission
+  otherwise, users might create trusted tokens without your permission
 
 * log_levels:
     0:  all the logs
