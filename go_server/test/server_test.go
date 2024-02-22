@@ -5,7 +5,7 @@ import (
 	"io"
 	"net"
 	server "server/chat_server"
-	"server/chat_server/config"
+	"server/config"
 	"strings"
 	"testing"
 	"time"
@@ -78,6 +78,9 @@ func (csc *ChatSerConn) mkConn() error {
 }
 
 func init() {
+	println(" **********************************************")
+	println(" **  This test expects port 8080 to be free  **")
+	println(" **********************************************\n")
 	conf = config.Default()
 	chat_s = server.New()
 	chat_s.Conf = conf
