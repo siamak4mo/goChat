@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"server/config"
 	"server/logger"
 	"server/chat_server/stoken"
+	"server/config"
 	"strings"
 	"unicode"
 )
@@ -59,7 +59,7 @@ type Server struct {
 	Clients map[string]*Packet // map from "ip:port" to login packet
 	Chats   map[string]*Chat   // map from ChatKey to Chat
 	Conf    *config.Config
-	Log     *serlog.Log
+	Log     *logger.Log
 }
 
 func (u *User_t) String() string {
@@ -154,7 +154,7 @@ func (s *Server) RegisterUser(name string) string {
 }
 
 func (s *Server) Serve() error {
-	s.Log = serlog.New(*s.Conf, "Chat Server ")
+	s.Log = logger.New(*s.Conf, "Chat Server ")
 	ln, err := net.Listen("tcp", s.Conf.Server.Addr)
 
 	if err != nil {

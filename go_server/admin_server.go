@@ -17,7 +17,7 @@ type routeHandler struct {
 type AdminServer struct {
 	Handlers   map[string]routeHandler `json:"routes"`
 	ChatServer *server.Server          `json:"-"`
-	Loger      *serlog.Log             `json:"-"`
+	Loger      *logger.Log             `json:"-"`
 	Conf       *config.Config          `json:"-"`
 }
 
@@ -42,7 +42,7 @@ func NewAdminServer(controller *main_controller) *AdminServer {
 	s := &AdminServer{
 		Handlers:   h,
 		ChatServer: controller.chat_s,
-		Loger:      serlog.New(*controller.config, "Admin Server"),
+		Loger:      logger.New(*controller.config, "Admin Server"),
 		Conf:       controller.config,
 	}
 
