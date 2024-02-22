@@ -57,7 +57,13 @@ func (lw *LogWriter) Flushf(format string, args ...any) {
 	fmt.Printf(format, args...)
 }
 
-// log extension
+// extensions
+// add a sub module (prints: `Module.sub_module`)
+func LogEX_SetSubModule(sub_module string) LogExt {
+	return func(l *LogWriter) {
+		l.Module = fmt.Sprintf("%s.%s", l.Module, sub_module)
+	}
+}
 func LogEX_UpdateTime() LogExt {
 	return func(l *LogWriter) {
 		l.Time = time.Now()
