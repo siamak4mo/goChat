@@ -158,8 +158,7 @@ func (s *Server) Serve() error {
 	ln, err := net.Listen("tcp", s.Conf.Server.Addr)
 
 	if err != nil {
-		s.Log.Panicf("Could not listen on %v\n",
-			serlog.Nop, s.Conf.Server.Addr)
+		s.Log.Panicf("Could not listen on %v\n", s.Conf.Server.Addr)
 		return err
 	}
 
