@@ -195,7 +195,7 @@ static inline int
 MAIN_loop_H (void *)
 {
   // make chat and input windows
-  cw = mk_chatw (w.ws_row-INP_W_LEN, w.ws_col, false);
+  cw = mk_chatw (w.ws_row - INP_W_LEN - 1, w.ws_col, false);
   inpw = mk_chatw (INP_W_LEN, w.ws_col, true);
   // init ncurses
   initscr ();
