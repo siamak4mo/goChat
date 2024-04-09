@@ -30,19 +30,19 @@ static const wchar_t __ME[] = {'(', '*', ')', '|', ' ', '\0'};
 
 
 /* create and initialize chat window */
-chatw mk_chatw(int, int, bool);
-void init_chat_window(chatw *, int, int);
+chatw mk_chatw (int, int, bool);
+void init_chat_window (chatw *, int, int);
 /* set window name (displayed on the top-right corner) */
-void cw_set_name(chatw *cw, const char *name);
+void cw_set_name (chatw *cw, const char *name);
 /* clear contents */
-void cw_clear(chatw *);
+void cw_clear (chatw *);
 /* write text to chat window functions */
-void cw_write(chatw *, const wchar_t *);
-void cw_write_char(chatw *, const char *);
-void cw_write_char_mess(chatw *, const char *);
-void cw_vawrite(chatw *, int, ...);
-void cw_vawrite_char(chatw *, int, ...);
+void cw_write (chatw *, const wchar_t *);
+void cw_write_char (chatw *, const char *);
+void cw_write_char_mess (chatw *, const char *);
+void cw_vawrite (chatw *, int, ...);
+void cw_vawrite_char (chatw *, int, ...);
 /* read from chat window functions */
-int cw_read(chatw *, wchar_t *, int);
+int cw_read (chatw *, wchar_t *, int);
 void cw_end (chatw *);
 #endif

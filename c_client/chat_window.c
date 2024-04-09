@@ -8,16 +8,16 @@
 #define NAME_MAXLEN(col) ((col)/NL - NL)
 
 chatw
-mk_chatw(int row, int col, bool boxed)
+mk_chatw (int row, int col, bool boxed)
 {
   return (chatw){.row=row,
                  .col=col, .box=boxed, .w=NULL};
 }
 
 void
-cw_set_name(chatw *cw, const char *name)
+cw_set_name (chatw *cw, const char *name)
 {
-  int ml = NAME_MAXLEN(cw->col);
+  int ml = NAME_MAXLEN (cw->col);
   if (cw->name == NULL || ml < 3)
     return;
 
@@ -34,7 +34,7 @@ cw_set_name(chatw *cw, const char *name)
 }
 
 static inline void
-redrawbox(chatw *cw)
+redrawbox (chatw *cw)
 {
   werase (cw->w);
   box (cw->w, 0, 0);
@@ -43,7 +43,7 @@ redrawbox(chatw *cw)
 }
 
 void
-cw_clear(chatw *cw)
+cw_clear (chatw *cw)
 {
   wclear (cw->w);
   if (cw->box)
@@ -54,12 +54,12 @@ cw_clear(chatw *cw)
 }
 
 void
-init_chat_window(chatw *cw, int x, int y)
+init_chat_window (chatw *cw, int x, int y)
 {
   if (cw->box)
     {
       cw->padding = 1;
-      cw->name = malloc (NAME_MAXLEN(cw->col));
+      cw->name = malloc (NAME_MAXLEN (cw->col));
       cw->name[0] = '\0';
     }
   else cw->padding = 0;
@@ -74,7 +74,7 @@ init_chat_window(chatw *cw, int x, int y)
 }
 
 static inline void
-lift_up(chatw *cw, int n)
+lift_up (chatw *cw, int n)
 {
   int i,j;
 
@@ -121,7 +121,7 @@ lift_up1(chatw *cw)
 }
 
 static inline void
-cw_write_char_H(chatw *cw, const char *buf, int *i)
+cw_write_char_H (chatw *cw, const char *buf, int *i)
 { 
   for (; *buf != '\0'; ++buf)
     {
@@ -158,7 +158,7 @@ cw_write_char_H(chatw *cw, const char *buf, int *i)
 }
 
 static inline void
-cw_write_H(chatw *cw, const wchar_t *buf, int *i)
+cw_write_H (chatw *cw, const wchar_t *buf, int *i)
 {
   for (; *buf != '\0'; ++buf)
     {
@@ -194,7 +194,7 @@ cw_write_H(chatw *cw, const wchar_t *buf, int *i)
 }
 
 static inline void
-end_write(chatw *cw)
+end_write (chatw *cw)
 {
   if (cw->line_c < cw->row)
     cw->line_c++;
@@ -202,16 +202,16 @@ end_write(chatw *cw)
 }
 
 void
-cw_write_char(chatw *cw, const char *buf)
+cw_write_char (chatw *cw, const char *buf)
 {
   int i = cw->padding;
   
-  cw_write_char_H(cw, buf, &i);
+  cw_write_char_H (cw, buf, &i);
   end_write (cw);
 } 
 
 void
-cw_vawrite(chatw *cw, int argc, ...)
+cw_vawrite (chatw *cw, int argc, ...)
 {
    va_list args;
    int idx = cw->padding;
@@ -224,11 +224,11 @@ cw_vawrite(chatw *cw, int argc, ...)
          cw_write_H (cw, p, &idx);
      }
    end_write (cw);
-   va_end(args);
+   va_end (args);
 }
 
 void
-cw_vawrite_char(chatw *cw, int argc, ...)
+cw_vawrite_char (chatw *cw, int argc, ...)
 {
    va_list args;
    int idx = cw->padding;
@@ -241,11 +241,11 @@ cw_vawrite_char(chatw *cw, int argc, ...)
          cw_write_char_H (cw, p, &idx);
      }
    end_write (cw);
-   va_end(args);
+   va_end (args);
 }
 
 void
-cw_write_char_mess(chatw *cw, const char *buf)
+cw_write_char_mess (chatw *cw, const char *buf)
 {
   const char *p = buf;
   int c = 0;
@@ -262,7 +262,7 @@ cw_write_char_mess(chatw *cw, const char *buf)
 }
 
 void
-cw_write(chatw *cw, const wchar_t *buf)
+cw_write (chatw *cw, const wchar_t *buf)
 {
   int i = cw->padding;
 
@@ -271,7 +271,7 @@ cw_write(chatw *cw, const wchar_t *buf)
 }
 
 static inline void
-reset_read(chatw *cw)
+reset_read (chatw *cw)
 {
   cw->line_c = cw->padding;
   werase (cw->w);
@@ -285,13 +285,13 @@ reset_read(chatw *cw)
 }
 
 int
-cw_read(chatw *cw, wchar_t *result, int maxlen)
+cw_read (chatw *cw, wchar_t *result, int maxlen)
 {
   int rw = 0;
   int i;
 
   i = cw->padding;
-  reset_read(cw);
+  reset_read (cw);
   
   while (rw != maxlen)
     {
