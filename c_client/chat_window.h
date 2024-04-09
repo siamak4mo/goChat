@@ -23,8 +23,10 @@ typedef struct {
     LD_CUR(win, __y, __x);                              \
     wrefresh(win); } while (0)
 
-static const wchar_t ME[] = {'(', '*', ')', '|', ' ', '\0'};
-#define cw_write_my_mess(cw, buf) cw_vawrite (cw, 2, ME, buf);
+static const wchar_t __ME[] = {'(', '*', ')', '|', ' ', '\0'};
+/* use this macro to show messages written by the user */
+#define cw_write_my_mess(cw, mess_buf)                  \
+  cw_vawrite (cw, 2, __ME, mess_buf);
 
 
 /* create and initialize chat window */
