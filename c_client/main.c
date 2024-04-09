@@ -16,7 +16,6 @@
 
 static struct winsize w;
 static chatw cw, inpw;
-static int rxoff, ryoff; // inpw (x,y) cursor offset
 static chat_net cn;
 static bool isJoined = false;
 static char chatID[17];
@@ -43,16 +42,15 @@ static Cstate state = Uninitialized;
 static bool window_lock = false;
 
 #define RET_ERR(msg, code) do { ERR_MSG = (msg); return code; } while (0)
-#define ST_CURSOR() getyx (inpw.w, ryoff, rxoff);
-#define LD_CURSOR() wmove (inpw.w, ryoff, rxoff);
-#define SAFE_WRITE(fun_call) do {                   \
+
+#define SAFE_WRITE(__DO__) do {                     \
     while (window_lock) {};                         \
     window_lock = true;                             \
-    ST_CURSOR();                                    \
-    fun_call;                                       \
-    LD_CURSOR();                                    \
+    SAFE_CW(inpw.w, {                               \
+        __DO__;                                     \
+      });                                           \
     window_lock = false;                            \
-    wrefresh (inpw.w);          } while (0)
+    wrefresh (inpw.w); } while (0)
 
 // config file handling
 static const char default_config_path[] = "/tmp/client.config";
