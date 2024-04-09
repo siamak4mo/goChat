@@ -127,7 +127,11 @@ cw_write_char_H(chatw *cw, const char *buf, int *i)
     {
       if (cw->line_c >= cw->row - cw->padding)
         {
-          lift_up1 (cw);
+          // shift cw->w contents one line up
+          SAFE_CW (cw->w, {
+              wmove (cw->w, 0, 0);
+              wdeleteln (cw->w);
+            });
           cw->line_c = cw->row - cw->padding - 1;
           for (; *i<cw->col-cw->padding; (*i)++)
             mvwaddch (cw->w, cw->line_c, *i, ' ');
@@ -160,7 +164,11 @@ cw_write_H(chatw *cw, const wchar_t *buf, int *i)
     {
       if (cw->line_c >= cw->row - cw->padding)
         {
-          lift_up1 (cw);
+          // shift cw->w contents one line up
+          SAFE_CW (cw->w, {
+              wmove (cw->w, 0, 0);
+              wdeleteln (cw->w);
+            });
           cw->line_c = cw->row - cw->padding - 1;
           for (; *i<cw->col-cw->padding; (*i)++)
             mvwaddch (cw->w, cw->line_c, *i, ' ');
