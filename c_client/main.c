@@ -46,7 +46,7 @@ static bool window_lock = false;
 #define SAFE_WRITE(__DO__) do {                     \
     while (window_lock) {};                         \
     window_lock = true;                             \
-    SAFE_CW(inpw.w, {                               \
+    SAFE_CW (inpw.w, {                               \
         __DO__;                                     \
       });                                           \
     window_lock = false;                            \
@@ -54,11 +54,11 @@ static bool window_lock = false;
 
 // config file handling
 static const char default_config_path[] = "/tmp/client.config";
-static inline int load_config_from_file(const char *path);
-static inline int save_config(const char *path);
+static inline int load_config_from_file (const char *path);
+static inline int save_config (const char *path);
 
 static void
-__exit()
+__exit ()
 {
   // free ncurses mem
   endwin ();
@@ -75,7 +75,7 @@ __exit()
 }
 
 static inline void
-Usage()
+Usage ()
 {
   printf ("Usage: %s [OPTIONS]\n%s", __progname__,
           "OPTIONS:\n"
@@ -88,24 +88,24 @@ Usage()
 }
 
 static inline int
-got_enough_space()
+got_enough_space ()
 {
   ioctl (STDOUT_FILENO, TIOCGWINSZ, &w);
 
   if (w.ws_row < MIN_W_LEN || w.ws_col < MIN_W_LEN)
-    RET_ERR("terminal is too small -- exiting.", -1);
+    RET_ERR ("terminal is too small -- exiting.", -1);
   else
     return 0;
 }
 
 static inline void
-select_chat__H()
+select_chat__H ()
 {
   int n;
   char *p;
   // begin to select chat to join
   net_write (&cn, CHAT_SELECT, NULL, 0);
-  SAFE_WRITE(cw_write_char (&cw, " * enter chatID to join..."));
+  SAFE_WRITE (cw_write_char (&cw, " * enter chatID to join..."));
   
   while (cn.state == Connected)
     {
@@ -115,28 +115,28 @@ select_chat__H()
       else if (n>4 && strncmp (p+n-4, "EOF", 3) == 0) 
         {
           p[n-4] = '\0';
-          SAFE_WRITE(cw_write_char (&cw, p));
+          SAFE_WRITE (cw_write_char (&cw, p));
           break;
         }
       else
-        SAFE_WRITE(cw_write_char (&cw, p));
+        SAFE_WRITE (cw_write_char (&cw, p));
     }
 }
 
 static inline int
-conn_to_server__H()
+conn_to_server__H ()
 {
   if (strlen (opt.server_addr) == 0 ||
       net_init (&cn, opt.server_addr, opt.server_port) != 0)
-    RET_ERR("Could not connect to the server - exiting", -1);
-  SAFE_WRITE(cw_write_char (&cw, " * connected to the server"));
+    RET_ERR ("Could not connect to the server - exiting", -1);
+  SAFE_WRITE (cw_write_char (&cw, " * connected to the server"));
   state = Initialized;
 
   return 0;
 }
 
 static inline int
-login__H()
+login__H ()
 {
   int n;
   char *p;
@@ -144,15 +144,15 @@ login__H()
   if (opt.user_token == NULL || strlen (opt.user_token) == 0)
     { // to signup
       if (opt.username == NULL || strlen (opt.username) == 0)
-        RET_ERR("Either a token or username is required -- exiting", -1);
+        RET_ERR ("Either a token or username is required -- exiting", -1);
       net_write (&cn, SIGNUP, opt.username, strlen (opt.username));
       p = net_read (&cn, &n);
       if (strncmp (p, "Token: ", 7) != 0)
         {
           if (strncmp (p, "User Already exists", 19) == 0)
-            RET_ERR("Failed to signup, user already exists -- exiting", -1);
+            RET_ERR ("Failed to signup, user already exists -- exiting", -1);
           else
-            RET_ERR("Failed to signup -- exiting", -1);
+            RET_ERR ("Failed to signup -- exiting", -1);
         }
       else
         {
@@ -164,11 +164,11 @@ login__H()
   // begin to login
   net_write (&cn, LOGIN_OUT, opt.user_token, strlen (opt.user_token));
   p = net_read (&cn, &n);
-  if (strncmp(p, "Logged in", 8) != 0)
-    RET_ERR("Failed to login, token is not valid -- exiting", -1);
+  if (strncmp (p, "Logged in", 8) != 0)
+    RET_ERR ("Failed to login, token is not valid -- exiting", -1);
   else
     {
-      SAFE_WRITE(cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
+      SAFE_WRITE (cw_vawrite_char (&cw, 2, " * login token: ", opt.user_token));
       if (opt.username == NULL)
         {
           // get the username from the server
@@ -180,7 +180,7 @@ login__H()
               while (p[uname_len] != '\0' && p[uname_len] != '\n')
                 uname_len++;
               p[uname_len] = '\0';
-              opt.username = malloc(uname_len);
+              opt.username = malloc (uname_len);
               strncpy (opt.username, p+10, uname_len);
             }
           else
@@ -217,8 +217,8 @@ MAIN_loop_H (void *)
   // print chat rooms and ask user to select one
   select_chat__H ();
   
-  wchar_t *buf = malloc (MAX_BUF*sizeof(wchar_t));
-  memset (buf, 0, MAX_BUF*sizeof(wchar_t));
+  wchar_t *buf = malloc (MAX_BUF * sizeof (wchar_t));
+  memset (buf, 0, MAX_BUF * sizeof (wchar_t));
   
   while (cn.state == Connected)
     {
@@ -233,22 +233,22 @@ MAIN_loop_H (void *)
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
           if (strncmp (p, "Chat doesn't exist", 18) == 0)
-            SAFE_WRITE(cw_write_char (&cw, " ? chat not found - try again"));
+            SAFE_WRITE (cw_write_char (&cw, " ? chat not found - try again"));
           else if (strlen (p) != 0)
             {
               isJoined = true;
               cw_clear (&cw);
-              SAFE_WRITE(cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
+              SAFE_WRITE (cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
               state = Joined;
-              wcharcpy(chatID, buf);
+              wcharcpy (chatID, buf);
               cw_set_name (&cw, chatID);
             }
         }
       else
         { // send text packet
           if (net_wwrite (&cn, TEXT, buf) <= 0)
-            RET_ERR("Network Fault -- exiting.", -1);
-          SAFE_WRITE(cw_write_my_mess(&cw, buf));
+            RET_ERR ("Network Fault -- exiting.", -1);
+          SAFE_WRITE (cw_write_my_mess (&cw, buf));
         }
     }
   free (buf);
@@ -256,26 +256,26 @@ MAIN_loop_H (void *)
 }
 
 static inline int
-READCHAT_loop_H(void *)
+READCHAT_loop_H (void *)
 {
   int n;
   char *p;
   
   while (state != Joined) {};
-  while(cn.state == Connected)
+  while (cn.state == Connected)
     { // text message
       p = net_read (&cn, &n);
       if (p == NULL)
-        RET_ERR("Network Fault -- exiting.", -1);
+        RET_ERR ("Network Fault -- exiting.", -1);
       if (strlen (p) != 0)
-        SAFE_WRITE(cw_write_char_mess (&cw, p));
+        SAFE_WRITE (cw_write_char_mess (&cw, p));
     }
 
   return 0; // unreachable
 }
 
 static inline int
-load_config_from_file(const char *path)
+load_config_from_file (const char *path)
 {
   int res = 0, r = 2;
   FILE *f;
@@ -286,16 +286,16 @@ load_config_from_file(const char *path)
     f = fopen (path, "r");
   
   if (f==NULL)
-    RET_ERR("Could not open config file -- exiting.", -1);
+    RET_ERR ("Could not open config file -- exiting.", -1);
   
   char *key = malloc (32);
   char *val = malloc (128);
   
   while (r == 2)
     {
-      r = fscanf(f, "%32[^ ] %128[^\n]%*c", key, val);
+      r = fscanf (f, "%32[^ ] %128[^\n]%*c", key, val);
       if (r < 0)
-        RET_ERR("Could not read the config file -- exiting.", -1);
+        RET_ERR ("Could not read the config file -- exiting.", -1);
       if (!strcmp (key, "server_addr"))
         strcpy (opt.server_addr, val);
       else if (!strcmp (key, "server_port"))
@@ -311,7 +311,7 @@ load_config_from_file(const char *path)
           strcpy (opt.user_token, val);
         }
       else
-        RET_ERR("Parsing config file failed -- exiting.", -1);
+        RET_ERR ("Parsing config file failed -- exiting.", -1);
     }
   
   free (key);
@@ -321,7 +321,7 @@ load_config_from_file(const char *path)
 }
 
 static inline int
-save_config(const char *path)
+save_config (const char *path)
 {
   FILE *f = fopen (path, "w+");
   if (f==NULL)
@@ -335,7 +335,7 @@ save_config(const char *path)
 }
 
 static inline int
-get_arg(const char *flag, char *arg)
+get_arg (const char *flag, char *arg)
 {
   if (!strcmp (flag, "--"))
     opt.EOO = true;
@@ -359,19 +359,19 @@ get_arg(const char *flag, char *arg)
         return 1;
     }
   else
-    RET_ERR("unknown argument -- exiting.", 1);
+    RET_ERR ("unknown argument -- exiting.", 1);
   return 0;
 }
 
 static inline int
-pars_args(int argc, char **argv)
+pars_args (int argc, char **argv)
 {
   for (argc--, argv++; argc > 0; argc--, argv++)
     {
       if (!opt.EOO && argv[0][0] == '-')
         {
           if (argc == 1)
-            RET_ERR("Invalid option value -- exiting.", -1);
+            RET_ERR ("Invalid option value -- exiting.", -1);
           if (get_arg (*argv, *(argv+1)) != 0)
             return -1;
           if (get_arg (*argv, *(argv+1)) != 0)
@@ -386,23 +386,23 @@ pars_args(int argc, char **argv)
 }
 
 static inline int
-check_opts()
+check_opts ()
 {
   if (strlen (opt.server_addr) == 0)
-    RET_ERR("Invalid server IP address -- exiting.", -1);
+    RET_ERR ("Invalid server IP address -- exiting.", -1);
   if (opt.server_port <= 0 || opt.server_port > (2<<16))
-    RET_ERR("Invalid server port number -- exiting.", -1);
+    RET_ERR ("Invalid server port number -- exiting.", -1);
   if (opt.username == NULL && opt.user_token == NULL)
-    RET_ERR("Either a token or username is required -- exiting", -1);
+    RET_ERR ("Either a token or username is required -- exiting", -1);
 
   return 0;
 }
 
 int
-main(int argc, char **argv)
+main (int argc, char **argv)
 {
   __progname__ = argv[0];
-  if (got_enough_space(w) != 0)
+  if (got_enough_space (w) != 0)
     {
       puts (ERR_MSG);
       return 1;
