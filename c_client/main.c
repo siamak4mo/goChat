@@ -105,7 +105,7 @@ select_chat__H()
   char *p;
   // begin to select chat to join
   net_write (&cn, CHAT_SELECT, NULL, 0);
-  SAFE_WRITE(cw_write_char (&cw, " * type chatID to join..."));
+  SAFE_WRITE(cw_write_char (&cw, " * enter chatID to join..."));
   
   while (cn.state == Connected)
     {
