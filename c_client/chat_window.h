@@ -12,6 +12,15 @@ typedef struct {
   WINDOW *w;
 } chatw;
 
+#define ST_CUR(win, ry, rx) getyx (win, ry, rx);
+#define LD_CUR(win, ry, rx) wmove (win, ry, rx);
+#define SAFE_CW(win, __DO__) do {                       \
+    int __y, __x;                                       \
+    ST_CUR(win, __y, __x);                              \
+    __DO__;                                             \
+    LD_CUR(win, __y, __x);                              \
+    wrefresh(win); } while (0)
+
 static const wchar_t ME[] = {'(', '*', ')', '|', ' ', '\0'};
 #define cw_write_my_mess(cw, buf) cw_vawrite (cw, 2, ME, buf);
 
