@@ -227,18 +227,27 @@ MAIN_loop_H (void *)
         continue;
       if (buf[0]=='E' && buf[1]=='O' && buf[2]=='F')
         break;
-      
+
+      int len;
       if (state != Joined)
         { // send chat select packet
           net_wwrite (&cn, CHAT_SELECT, buf);
           const char *p = net_read (&cn, NULL);
           if (strncmp (p, "Chat doesn't exist", 18) == 0)
             SAFE_WRITE (cw_write_char (&cw, " ? chat not found - try again"));
-          else if (strlen (p) != 0)
+          else if ((len = strlen (p)) != 0)
             {
               isJoined = true;
               cw_clear (&cw);
-              SAFE_WRITE (cw_vawrite_char (&cw, 2, p, "  --  (*) is you"));
+              SAFE_WRITE ({
+                  char *dash_header = malloc (len + 1);
+
+                  memset (dash_header, '-', len);
+                  cw_vawrite_char (&cw, 6,
+                            dash_header, "\n", p, "\n", dash_header, "\n");
+
+                  free (dash_header);
+                });
               state = Joined;
               wcharcpy (chatID, buf);
               cw_set_name (&cw, chatID);
