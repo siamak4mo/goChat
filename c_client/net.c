@@ -12,14 +12,14 @@
 #define INVALID_SOCKET -1
 
 static inline void
-net_malloc(struct net_buf *netb)
+net_malloc (struct net_buf *netb)
 {
   if (netb->cap > 0)
     netb->buf = malloc (netb->cap);
 }
 
 static inline void
-net_free(struct net_buf *netb)
+net_free (struct net_buf *netb)
 {
   if (netb->buf != NULL && netb->cap > 0)
     {
@@ -29,7 +29,7 @@ net_free(struct net_buf *netb)
 }
 
 chat_net
-net_new()
+net_new ()
 {
   struct net_buf netb_R = {
     .buf=NULL,
@@ -53,21 +53,21 @@ net_new()
 
 
 int
-net_init(chat_net *cn, const char *addr, int port)
+net_init (chat_net *cn, const char *addr, int port)
 {
   int res;
   struct sockaddr_in ss_in;
 
   ss_in.sin_family = AF_INET;
-  ss_in.sin_addr.s_addr = inet_addr(addr);
-  ss_in.sin_port = htons(port);
+  ss_in.sin_addr.s_addr = inet_addr (addr);
+  ss_in.sin_port = htons (port);
 
   while (cn->retry2conn-- != 0)
     {
       cn->sfd = socket (AF_INET, SOCK_STREAM, 0);
       res = connect (cn->sfd,
                      (struct sockaddr *) &ss_in,
-                     sizeof(ss_in));
+                     sizeof (ss_in));
       if (res==0)
         {
           net_malloc (&(cn->rbuf));
@@ -84,9 +84,9 @@ net_init(chat_net *cn, const char *addr, int port)
 }
 
 static inline void
-set_packet_type(char *buf, Packet type)
+set_packet_type (char *buf, Packet type)
 {
-  switch(type)
+  switch (type)
     {
     case SIGNUP:
       memcpy (buf, "S ", PAC_PAD);
@@ -107,7 +107,7 @@ set_packet_type(char *buf, Packet type)
 }
 
 int
-net_write(chat_net *cn, Packet type,
+net_write (chat_net *cn, Packet type,
           const char *body, int len)
 {
   char *buf;
@@ -132,7 +132,7 @@ net_write(chat_net *cn, Packet type,
 }
 
 int
-net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
+net_wwrite (chat_net *cn, Packet type, const wchar_t *body)
 {
   char *buf;
   char *p;
@@ -159,7 +159,7 @@ net_wwrite(chat_net *cn, Packet type, const wchar_t *body)
 }
 
 char *
-net_read(chat_net *cn, int *len)
+net_read (chat_net *cn, int *len)
 {
   char *buf;
   
@@ -187,7 +187,7 @@ net_read(chat_net *cn, int *len)
 }
 
 void
-net_end(chat_net *cn)
+net_end (chat_net *cn)
 { 
   close (cn->sfd);
   cn->sfd = INVALID_SOCKET;
