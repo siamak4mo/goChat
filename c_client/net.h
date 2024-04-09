@@ -28,11 +28,16 @@ typedef struct {
   enum Nstate state;
 } chat_net;
 
+
+/* creat and initialize new chat net network handler */
 chat_net net_new ();
 int net_init (chat_net *, const char *, int);
+/* send to the server functions */
 int net_write (chat_net *, Packet, const char *, int);
 int net_wwrite (chat_net *, Packet, const wchar_t *);
+/* read from the server function */
 char * net_read (chat_net *, int *);
+/* net terminator */
 void net_end (chat_net *);
 
 #endif
